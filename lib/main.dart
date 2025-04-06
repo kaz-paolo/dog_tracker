@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'homescreen.dart';
+import 'dog_list_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +14,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Dog Tracker',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(
+            Theme.of(context).textTheme,
+          )),
       home: const MyHomePage(title: 'Dog Tracker'),
     );
   }
@@ -50,6 +55,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('Go to Home Screen'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const DogListScreen()),
+                );
+              },
+              child: const Text('View My Dogs'),
             ),
           ],
         ),
