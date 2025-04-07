@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'add_dog_screen.dart';
+import 'dog.dart';
+import 'dog_profile_screen.dart';
 
 void main() {
   runApp(
@@ -20,50 +23,83 @@ class DogListScreen extends StatefulWidget {
 class _DogListScreenState extends State<DogListScreen> {
   final TextEditingController _searchController = TextEditingController();
 
+  Future<void> _goToAddDogScreen() async {
+    final newDog = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddDogScreen()),
+    );
+
+    if (newDog != null && newDog is Dog) {
+      setState(() {
+        allDogs.add(newDog);
+        _filterDogs(); // To reapply the search filter, if any
+      });
+    }
+  }
+
   // List of all dogs
-  final List<DogCard> allDogs = const [
-    DogCard(
+  final List<Dog> allDogs = [
+    Dog(
       name: 'Kkuma',
       breed: 'Maltese',
       gender: 'F',
       imagePath: 'assets/images/kkuma.png',
+      birthDate: 'Jan 10, 2020',
+      weight: '3.5 kg',
+      age: '5 yrs',
+      health: 'Healthy',
     ),
-    DogCard(
+    Dog(
       name: 'Latte',
       breed: 'Norwich Terrier',
       gender: 'M',
       imagePath: 'assets/images/latte.png',
+      birthDate: 'May 12, 2022',
+      weight: '5.1 kg',
+      age: '3 yrs',
+      health: 'Healthy',
     ),
-    DogCard(
+    Dog(
       name: 'Choco',
-      breed: 'Shitzu',
+      breed: 'Shitzhu',
       gender: 'F',
       imagePath: 'assets/images/choco.png',
+      birthDate: 'Dec 15, 2023',
+      weight: '4 kg',
+      age: '5 yrs',
+      health: 'Healthy',
     ),
-    DogCard(
+    Dog(
       name: 'Sophia',
-      breed: 'Shitzu',
+      breed: 'Mini Pinscher',
       gender: 'F',
       imagePath: 'assets/images/sophia.png',
+      birthDate: 'February 26, 2012',
+      weight: '8 kg',
+      age: '12 yrs',
+      health: 'Healthy',
     ),
   ];
 
   // Filtered Dog list based on search
-  List<DogCard> filteredDogs = [];
+  List<Dog> filteredDogs = [];
 
   @override
   void initState() {
     super.initState();
-    filteredDogs = allDogs;
+    filteredDogs = allDogs.cast<Dog>();
     _searchController.addListener(_filterDogs);
   }
 
   void _filterDogs() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      filteredDogs = allDogs.where((dog) {
-        return dog.name.toLowerCase().contains(query);
-      }).toList();
+      filteredDogs = allDogs
+          .where((dog) {
+            return dog.name.toLowerCase().contains(query);
+          })
+          .cast<Dog>()
+          .toList();
     });
   }
 
@@ -148,32 +184,40 @@ class _DogListScreenState extends State<DogListScreen> {
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   childAspectRatio: 0.75,
-                  children: filteredDogs,
+                  children: filteredDogs.map((dog) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DogProfileScreen(dog: dog),
+                          ),
+                        );
+                      },
+                      child: DogCard(dog: dog),
+                    );
+                  }).toList(),
                 ),
               ),
             ],
           ),
         ),
       ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: _goToAddDogScreen,
+        backgroundColor: Color(0xFFFA9B63),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
 
 class DogCard extends StatelessWidget {
-  final String name;
-  final String breed;
-  final String gender;
-  final String imagePath;
+  final Dog dog;
 
-  const DogCard({
-    super.key,
-    required this.name,
-    required this.breed,
-    required this.gender,
-    required this.imagePath,
-  });
+  const DogCard({super.key, required this.dog});
 
-// Dogs
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -199,7 +243,7 @@ class DogCard extends StatelessWidget {
               child: Container(
                 color: const Color(0xFFFFDCAA),
                 child: Image.asset(
-                  imagePath,
+                  dog.imagePath,
                   fit: BoxFit.cover,
                   width: double.infinity,
                 ),
@@ -210,12 +254,11 @@ class DogCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
             child: Column(
               children: [
-                // Dog Info
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      name,
+                      dog.name,
                       style: GoogleFonts.poppins(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -230,10 +273,8 @@ class DogCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(28),
                       ),
                       child: Text(
-                        gender,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                        ),
+                        dog.gender,
+                        style: GoogleFonts.poppins(fontSize: 16),
                       ),
                     ),
                   ],
@@ -242,7 +283,7 @@ class DogCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    breed,
+                    dog.breed,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.grey,
