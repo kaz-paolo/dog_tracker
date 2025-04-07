@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Dog Tracker',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+          fontFamily: 'Poppins',
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
           textTheme: GoogleFonts.poppinsTextTheme(
