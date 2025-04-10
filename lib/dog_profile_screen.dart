@@ -77,7 +77,7 @@ class DogProfileScreen extends StatelessWidget {
                     _buildInfoItem(Icons.female, dog.gender),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
               ],
             ),
           ),

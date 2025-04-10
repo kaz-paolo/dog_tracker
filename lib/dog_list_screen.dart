@@ -66,7 +66,7 @@ class _DogListScreenState extends State<DogListScreen> {
       imagePath: 'assets/images/choco.png',
       birthDate: 'Dec 15, 2023',
       weight: '4 kg',
-      age: '5 yrs',
+      age: '1 yr',
       health: 'Healthy',
     ),
     Dog(
@@ -206,7 +206,7 @@ class _DogListScreenState extends State<DogListScreen> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: _goToAddDogScreen,
-        backgroundColor: Color(0xFFFA9B63),
+        backgroundColor: Color(0xFFFFDCAA),
         child: const Icon(Icons.add),
       ),
     );
