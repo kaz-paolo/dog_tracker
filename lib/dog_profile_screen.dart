@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dog.dart';
 
@@ -40,10 +42,12 @@ class DogProfileScreen extends StatelessWidget {
                   ),
                 ),
                 CircleAvatar(
-                  radius: 80,
-                  backgroundColor: Colors.orange.shade100,
-                  backgroundImage: AssetImage(dog.imagePath),
+                radius: 80,
+                backgroundColor: Colors.orange.shade100,
+                child: ClipOval(
+                  child: _buildDogImage(dog),
                 ),
+              ),
                 const SizedBox(height: 16),
                 Text(
                   dog.name,
@@ -120,3 +124,54 @@ class DogProfileScreen extends StatelessWidget {
     );
   }
 }
+
+
+// make the image depding on web/mobile
+  Widget _buildDogImage(Dog dog) {
+    if (dog.imagePath.isEmpty) {
+      return const Icon(
+        Icons.pets,
+        color: Colors.grey,
+        size: 80,
+      );
+    }
+
+    if (dog.imagePath.startsWith('web_image_') && dog.imageBytes != null) {
+      return Image.memory(
+        dog.imageBytes!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.error,
+            color: Colors.red,
+            size: 50,
+          );
+        },
+      );
+    }
+
+    if (kIsWeb) {
+      // web
+      return const Icon(
+        Icons.image,
+        color: Colors.grey,
+        size: 50,
+      );
+    } else {
+      // mobile
+      return Image.file(
+        File(dog.imagePath),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.error,
+            color: Colors.red,
+            size: 50,
+          );
+        },
+      );
+    }
+  }
+

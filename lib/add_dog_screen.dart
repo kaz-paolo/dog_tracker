@@ -57,25 +57,31 @@ class _AddDogScreenState extends State<AddDogScreen> {
     });
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
+Future<void> _pickImage() async {
+  final picker = ImagePicker();
+
+  try {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      if (kIsWeb) {
-        final bytes = await pickedFile.readAsBytes();
-        setState(() {
-          _imageBytes = bytes;
-          _imagePath = null;
-        });
-      } else {
-        setState(() {
-          _imagePath = pickedFile.path;
-          _imageBytes = null;
-        });
-      }
+      final bytes = await pickedFile.readAsBytes();
+      final fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.jpg';
+      
+      setState(() {
+        _imageBytes = bytes;
+        _imagePath = kIsWeb ? 'web_image_$fileName' : pickedFile.path;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No image selected.')),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to pick image: $e')),
+    );
   }
+}
 
   Future<void> _pickBirthDate() async {
     final picked = await showDatePicker(
@@ -104,33 +110,34 @@ class _AddDogScreenState extends State<AddDogScreen> {
     }
   }
 
-  void _submitDog() {
-    if (_formKey.currentState!.validate()) {
-      // Check if either imagePath or imageBytes is set
-      if (_imagePath != null || _imageBytes != null) {
-        final rawWeight = weightController.text.replaceAll(RegExp(r'\D'), '');
-        final rawAge = ageController.text.replaceAll(RegExp(r'\D'), '');
-        final ageSuffix = rawAge == '1' ? 'yr' : 'yrs';
+void _submitDog() {
+  if (_formKey.currentState!.validate()) {
+    // Check if either imagePath or imageBytes is set
+    if (_imagePath != null) {
+      final rawWeight = weightController.text.replaceAll(RegExp(r'\D'), '');
+      final rawAge = ageController.text.replaceAll(RegExp(r'\D'), '');
+      final ageSuffix = rawAge == '1' ? 'yr' : 'yrs';
 
-        final newDog = Dog(
-          name: nameController.text,
-          breed: breedController.text,
-          gender: _selectedGender ?? '',
-          imagePath: _imagePath ?? '',
-          birthDate: birthDateController.text,
-          weight: '$rawWeight kg',
-          age: '$rawAge $ageSuffix',
-          health: _selectedHealth ?? '',
-        );
+      final newDog = Dog(
+        name: nameController.text,
+        breed: breedController.text,
+        gender: _selectedGender ?? '',
+        imagePath: _imagePath!,
+        imageBytes: _imageBytes, // Include the image bytes
+        birthDate: birthDateController.text,
+        weight: '$rawWeight kg',
+        age: '$rawAge $ageSuffix',
+        health: _selectedHealth ?? '',
+      );
 
-        Navigator.pop(context, newDog);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please upload an image.')),
-        );
-      }
+      Navigator.pop(context, newDog);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload an image.')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -147,31 +154,32 @@ class _AddDogScreenState extends State<AddDogScreen> {
           child: ListView(
             children: [
               GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Color(0xFFFFDCAA),
-                    child: ClipOval(
-                      child: _imageBytes != null
-                          ? Image.memory(
-                              _imageBytes!,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.cover,
-                            )
-                          : (_imagePath != null
-                              ? Image.file(
-                                  File(_imagePath!),
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.cover,
-                                )
-                              : const Icon(
-                                  Icons.add_a_photo,
-                                  size: 40,
-                                  color: Color(0xFFFA9B63),
-                                )),
-                    ),
+  onTap: _pickImage,
+  child: CircleAvatar(
+    radius: 60,
+    backgroundColor: const Color(0xFFFFDCAA),
+    child: ClipOval(
+      child: _imageBytes != null
+          ? Image.memory(
+              _imageBytes!,
+              width: 120,
+              height: 120,
+              fit: BoxFit.cover,
+            )
+          : (_imagePath != null
+              ? Image.file(
+                  File(_imagePath!),
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
+                )
+              : const Icon(
+                  Icons.add_a_photo,
+                  size: 40,
+                  color: Color(0xFFFA9B63),
+                )),
+    ),
+
                   )),
               const SizedBox(height: 20),
               TextFormField(

@@ -1,10 +1,12 @@
 import 'package:dog_tracker/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'homescreen.dart';
+import 'home_screen.dart';
 import 'dog_list_screen.dart';
+import 'activities_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
+
   runApp(const MyApp());
 }
 
@@ -76,6 +78,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('Go to Splash Screen'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ActivitiesScreen()),
+                );
+              },
+              child: const Text('Go to Activities'),
             ),
           ],
         ),

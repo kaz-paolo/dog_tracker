@@ -1,17 +1,11 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'add_dog_screen.dart';
 import 'dog.dart';
+import 'dog_list_manager.dart';
+import 'add_dog_screen.dart';
 import 'dog_profile_screen.dart';
-
-void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: DogListScreen(),
-    ),
-  );
-}
 
 class DogListScreen extends StatefulWidget {
   const DogListScreen({super.key});
@@ -22,6 +16,36 @@ class DogListScreen extends StatefulWidget {
 
 class _DogListScreenState extends State<DogListScreen> {
   final TextEditingController _searchController = TextEditingController();
+  List<Dog> allDogs = [];
+  List<Dog> filteredDogs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDogs();
+    _searchController.addListener(_filterDogs);
+  }
+
+  Future<void> _loadDogs() async {
+    final loadedDogs = await DogListManager.loadDogList();
+    setState(() {
+      allDogs = loadedDogs;
+      filteredDogs = List.from(allDogs);
+    });
+  }
+
+  Future<void> _saveDogs() async {
+    await DogListManager.saveDogList(allDogs);
+  }
+
+  void _filterDogs() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      filteredDogs = allDogs
+          .where((dog) => dog.name.toLowerCase().contains(query))
+          .toList();
+    });
+  }
 
   Future<void> _goToAddDogScreen() async {
     final newDog = await Navigator.push(
@@ -32,75 +56,10 @@ class _DogListScreenState extends State<DogListScreen> {
     if (newDog != null && newDog is Dog) {
       setState(() {
         allDogs.add(newDog);
-        _filterDogs(); // To reapply the search filter, if any
+        _filterDogs();
       });
+      await _saveDogs();
     }
-  }
-
-  // List of all dogs
-  final List<Dog> allDogs = [
-    Dog(
-      name: 'Kkuma',
-      breed: 'Maltese',
-      gender: 'F',
-      imagePath: 'assets/images/kkuma.png',
-      birthDate: 'Jan 10, 2020',
-      weight: '3.5 kg',
-      age: '5 yrs',
-      health: 'Healthy',
-    ),
-    Dog(
-      name: 'Latte',
-      breed: 'Norwich Terrier',
-      gender: 'M',
-      imagePath: 'assets/images/latte.png',
-      birthDate: 'May 12, 2022',
-      weight: '5.1 kg',
-      age: '3 yrs',
-      health: 'Healthy',
-    ),
-    Dog(
-      name: 'Choco',
-      breed: 'Shitzhu',
-      gender: 'F',
-      imagePath: 'assets/images/choco.png',
-      birthDate: 'Dec 15, 2023',
-      weight: '4 kg',
-      age: '1 yr',
-      health: 'Healthy',
-    ),
-    Dog(
-      name: 'Sophia',
-      breed: 'Mini Pinscher',
-      gender: 'F',
-      imagePath: 'assets/images/sophia.png',
-      birthDate: 'February 26, 2012',
-      weight: '8 kg',
-      age: '12 yrs',
-      health: 'Healthy',
-    ),
-  ];
-
-  // Filtered Dog list based on search
-  List<Dog> filteredDogs = [];
-
-  @override
-  void initState() {
-    super.initState();
-    filteredDogs = allDogs.cast<Dog>();
-    _searchController.addListener(_filterDogs);
-  }
-
-  void _filterDogs() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      filteredDogs = allDogs
-          .where((dog) {
-            return dog.name.toLowerCase().contains(query);
-          })
-          .cast<Dog>()
-          .toList();
-    });
   }
 
   @override
@@ -138,13 +97,12 @@ class _DogListScreenState extends State<DogListScreen> {
             children: [
               const SizedBox(height: 20),
               Center(
-                // Title
                 child: Text(
                   'My Dogs',
                   style: GoogleFonts.poppins(
                     fontSize: 50,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFA9B63),
+                    color: const Color(0xFFFA9B63),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -156,7 +114,7 @@ class _DogListScreenState extends State<DogListScreen> {
                 height: 40,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Color(0xFFFFDCAA),
+                  color: const Color(0xFFFFDCAA),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -206,7 +164,7 @@ class _DogListScreenState extends State<DogListScreen> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: _goToAddDogScreen,
-        backgroundColor: Color(0xFFFFDCAA),
+        backgroundColor: const Color(0xFFFFDCAA),
         child: const Icon(Icons.add),
       ),
     );
@@ -242,11 +200,7 @@ class DogCard extends StatelessWidget {
                   const BorderRadius.vertical(top: Radius.circular(16)),
               child: Container(
                 color: const Color(0xFFFFDCAA),
-                child: Image.asset(
-                  dog.imagePath,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
+                child: _buildDogImage(dog),
               ),
             ),
           ),
@@ -296,5 +250,54 @@ class DogCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // make the image depding on web/mobile
+  Widget _buildDogImage(Dog dog) {
+    if (dog.imagePath.isEmpty) {
+      return const Icon(
+        Icons.pets,
+        color: Colors.grey,
+        size: 50,
+      );
+    }
+
+    if (dog.imagePath.startsWith('web_image_') && dog.imageBytes != null) {
+      return Image.memory(
+        dog.imageBytes!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.error,
+            color: Colors.red,
+            size: 50,
+          );
+        },
+      );
+    }
+
+    if (kIsWeb) {
+      // web
+      return const Icon(
+        Icons.image,
+        color: Colors.grey,
+        size: 50,
+      );
+    } else {
+      // mobile
+      return Image.file(
+        File(dog.imagePath),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.error,
+            color: Colors.red,
+            size: 50,
+          );
+        },
+      );
+    }
   }
 }
