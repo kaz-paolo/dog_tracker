@@ -1,3 +1,4 @@
+import 'package:dog_tracker/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'homescreen.dart';
 import 'dog_list_screen.dart';
@@ -66,6 +67,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('View My Dogs'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SplashScreen()),
+                );
+              },
+              child: const Text('Go to Splash Screen'),
             ),
           ],
         ),
