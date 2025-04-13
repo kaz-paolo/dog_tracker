@@ -1,3 +1,4 @@
+import 'package:dog_tracker/custom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'dog_list_manager.dart';
 import 'dog.dart';
