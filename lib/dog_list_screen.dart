@@ -77,14 +77,20 @@ class _DogListScreenState extends State<DogListScreen> {
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: false,
         currentIndex: 1,
-        onTap: (index) {},
+        onTap: (index) {
+          if (index == 0) {
+            // Home button - navigate to main screen
+            Navigator.pushReplacementNamed(context, '/');
+          }
+          // You can add more navigation options for other buttons here
+        },
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Dogs'),
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Activities'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
 
