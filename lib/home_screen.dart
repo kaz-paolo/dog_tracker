@@ -1,3 +1,4 @@
+import 'custom_navbar.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
 import 'dart:async';
@@ -111,23 +112,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: false,
-        currentIndex: 0,
-        onTap: (index) {
-          // Handle navigation logic
-        },
-        elevation: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
-        ],
-      ),
+      bottomNavigationBar: const CustomNavBar(currentIndex: 0),
     );
   }
 

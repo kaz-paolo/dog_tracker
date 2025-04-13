@@ -6,6 +6,7 @@ import 'dog.dart';
 import 'dog_list_manager.dart';
 import 'add_dog_screen.dart';
 import 'dog_profile_screen.dart';
+import 'custom_navbar.dart';
 
 class DogListScreen extends StatefulWidget {
   const DogListScreen({super.key});
@@ -72,27 +73,7 @@ class _DogListScreenState extends State<DogListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Nav Bar
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: false,
-        currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) {
-            // Home button - navigate to main screen
-            Navigator.pushReplacementNamed(context, '/');
-          }
-          // You can add more navigation options for other buttons here
-        },
-        elevation: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Dogs'),
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Activities'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
-      ),
+      bottomNavigationBar: const CustomNavBar(currentIndex: 1),
 
       // Main Screen
       body: SafeArea(

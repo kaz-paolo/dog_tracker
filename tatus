@@ -1,0 +1,357 @@
+warning: in the working copy of 'linux/flutter/generated_plugin_registrant.cc', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'linux/flutter/generated_plugin_registrant.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'linux/flutter/generated_plugins.cmake', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'macos/Flutter/GeneratedPluginRegistrant.swift', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'windows/flutter/generated_plugin_registrant.cc', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'windows/flutter/generated_plugin_registrant.h', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'windows/flutter/generated_plugins.cmake', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/lib/activities_screen.dart b/lib/activities_screen.dart[m
+[1mindex cd2eea2..eb900dc 100644[m
+[1m--- a/lib/activities_screen.dart[m
+[1m+++ b/lib/activities_screen.dart[m
+[36m@@ -1,7 +1,8 @@[m
+ import 'package:flutter/material.dart';[m
+ import 'dog_list_manager.dart';[m
+ import 'dog.dart';[m
+[31m-import 'activity_manager.dart'; // New import[m
+[32m+[m[32mimport 'activity_manager.dart';[m[41m[m
+[32m+[m[32mimport 'custom_navbar.dart';[m[41m[m
+ [m
+ class ActivityTask {[m
+   final String taskType;[m
+[36m@@ -24,8 +25,10 @@[m [mclass ActivityTask {[m
+     return {[m
+       'taskType': taskType,[m
+       'dogName': dogName,[m
+[31m-      'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',[m
+[31m-      'time': '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',[m
+[32m+[m[32m      'date':[m[41m[m
+[32m+[m[32m          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',[m[41m[m
+[32m+[m[32m      'time':[m[41m[m
+[32m+[m[32m          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',[m[41m[m
+       'notes': notes,[m
+       'isDone': isDone,[m
+     };[m
+[36m@@ -34,7 +37,7 @@[m [mclass ActivityTask {[m
+   static ActivityTask fromJson(Map<String, dynamic> json) {[m
+     final dateParts = json['date'].split('-');[m
+     final timeParts = json['time'].split(':');[m
+[31m-    [m
+[32m+[m[41m[m
+     return ActivityTask([m
+       taskType: json['taskType'],[m
+       dogName: json['dogName'],[m
+[36m@@ -117,6 +120,7 @@[m [mclass ActivitiesScreen extends StatelessWidget {[m
+           ],[m
+         ),[m
+       ),[m
+[32m+[m[32m      bottomNavigationBar: const CustomNavBar(currentIndex: 2),[m[41m[m
+     );[m
+   }[m
+ [m
+[36m@@ -180,14 +184,14 @@[m [mclass _ActivityDetailsScreenState extends State<ActivityDetailsScreen>[m
+   String? selectedTaskType;[m
+   DateTime? selectedDate;[m
+   TimeOfDay? selectedTime;[m
+[31m-  [m
+[32m+[m[41m[m
+   final TextEditingController _notesController = TextEditingController();[m
+   final TextEditingController _dateController = TextEditingController();[m
+   final TextEditingController _timeController = TextEditingController();[m
+   final TextEditingController _amountController = TextEditingController();[m
+   final TextEditingController _durationController = TextEditingController();[m
+   final TextEditingController _distanceController = TextEditingController();[m
+[31m-  [m
+[32m+[m[41m[m
+   //store tasks[m
+   List<ActivityTask> tasks = [];[m
+ [m
+[36m@@ -253,89 +257,88 @@[m [mclass _ActivityDetailsScreenState extends State<ActivityDetailsScreen>[m
+     }[m
+   }[m
+ [m
+[31m-[m
+   void _calculateSummaryData() {[m
+[31m-  if (dogs.isEmpty) return;[m
+[32m+[m[32m    if (dogs.isEmpty) return;[m[41m[m
+ [m
+[31m-  try {[m
+[31m-    final now = DateTime.now();[m
+[31m-    final today = DateTime(now.year, now.month, now.day);[m
+[31m-    [m
+[31m-    // Initialize summary structure[m
+[31m-    summaryData = {};[m
+[31m-    for (var dog in dogs) {[m
+[31m-      summaryData[dog.name] = {[m
+[31m-        'totalFeedings': 0,[m
+[31m-        'todayFeedings': 0,[m
+[31m-        'lastFed': null,[m
+[31m-        'totalWalks': 0,[m
+[31m-        'walkMinutesToday': 0,[m
+[31m-        'upcomingVetVisits': 0,[m
+[31m-      };[m
+[31m-    }[m
+[32m+[m[32m    try {[m[41m[m
+[32m+[m[32m      final now = DateTime.now();[m[41m[m
+[32m+[m[32m      final today = DateTime(now.year, now.month, now.day);[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m      // Initialize summary structure[m[41m[m
+[32m+[m[32m      summaryData = {};[m[41m[m
+[32m+[m[32m      for (var dog in dogs) {[m[41m[m
+[32m+[m[32m        summaryData[dog.name] = {[m[41m[m
+[32m+[m[32m          'totalFeedings': 0,[m[41m[m
+[32m+[m[32m          'todayFeedings': 0,[m[41m[m
+[32m+[m[32m          'lastFed': null,[m[41m[m
+[32m+[m[32m          'totalWalks': 0,[m[41m[m
+[32m+[m[32m          'walkMinutesToday': 0,[m[41m[m
+[32m+[m[32m          'upcomingVetVisits': 0,[m[41m[m
+[32m+[m[32m        };[m[41m[m
+[32m+[m[32m      }[m[41m[m
+ [m
+[31m-    // calculate statistics[m
+[31m-    for (var task in tasks) {[m
+[31m-      if (!summaryData.containsKey(task.dogName)) continue;[m
+[32m+[m[32m      // calculate statistics[m[41m[m
+[32m+[m[32m      for (var task in tasks) {[m[41m[m
+[32m+[m[32m        if (!summaryData.containsKey(task.dogName)) continue;[m[41m[m
+ [m
+[31m-      final taskDate = DateTime(task.date.year, task.date.month, task.date.day);[m
+[31m-      final isToday = taskDate.year == today.year && [m
+[31m-                      taskDate.month == today.month && [m
+[31m-                      taskDate.day == today.day;[m
+[32m+[m[32m        final taskDate =[m[41m[m
+[32m+[m[32m            DateTime(task.date.year, task.date.month, task.date.day);[m[41m[m
+[32m+[m[32m        final isToday = taskDate.year == today.year &&[m[41m[m
+[32m+[m[32m            taskDate.month == today.month &&[m[41m[m
+[32m+[m[32m            taskDate.day == today.day;[m[41m[m
+ [m
+[31m-      if (task.taskType == 'Feed') {[m
+[31m-        summaryData[task.dogName]['totalFeedings']++;[m
+[31m-        if (isToday) {[m
+[31m-          summaryData[task.dogName]['todayFeedings']++;[m
+[31m-        }[m
+[31m-        [m
+[31m-        final taskDateTime = DateTime([m
+[31m-          task.date.year, [m
+[31m-          task.date.month, [m
+[31m-          task.date.day,[m
+[31m-          task.time.hour,[m
+[31m-          task.time.minute,[m
+[31m-        );[m
+[31m-        [m
+[31m-        final lastFed = summaryData[task.dogName]['lastFed'];[m
+[31m-        if (lastFed == null || [m
+[31m-            taskDateTime.isAfter(lastFed)) {[m
+[31m-          summaryData[task.dogName]['lastFed'] = taskDateTime;[m
+[32m+[m[32m        if (task.taskType == 'Feed') {[m[41m[m
+[32m+[m[32m          summaryData[task.dogName]['totalFeedings']++;[m[41m[m
+[32m+[m[32m          if (isToday) {[m[41m[m
+[32m+[m[32m            summaryData[task.dogName]['todayFeedings']++;[m[41m[m
+[32m+[m[32m          }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m          final taskDateTime = DateTime([m[41m[m
+[32m+[m[32m            task.date.year,[m[41m[m
+[32m+[m[32m            task.date.month,[m[41m[m
+[32m+[m[32m            task.date.day,[m[41m[m
+[32m+[m[32m            task.time.hour,[m[41m[m
+[32m+[m[32m            task.time.minute,[m[41m[m
+[32m+[m[32m          );[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m          final lastFed = summaryData[task.dogName]['lastFed'];[m[41m[m
+[32m+[m[32m          if (lastFed == null || taskDateTime.isAfter(lastFed)) {[m[41m[m
+[32m+[m[32m            summaryData[task.dogName]['lastFed'] = taskDateTime;[m[41m[m
+[32m+[m[32m          }[m[41m[m
+         }[m
+[31m-      }[m
+[31m-      [m
+[31m-      // add walk statistics[m
+[31m-      else if (task.taskType == 'Walk' || task.taskType == 'Exercise') {[m
+[31m-        summaryData[task.dogName]['totalWalks']++;[m
+[31m-        if (isToday) {[m
+[31m-          // duration from notes[m
+[31m-          try {[m
+[31m-            final durationText = task.notes.split(' ').firstWhere([m
+[31m-              (part) => RegExp(r'^\d+$').hasMatch(part),[m
+[31m-              orElse: () => '0',[m
+[31m-            );[m
+[31m-            int duration = int.tryParse(durationText) ?? 0;[m
+[31m-            summaryData[task.dogName]['walkMinutesToday'] += duration;[m
+[31m-          } catch (_) {[m
+[31m-            // If parsing fails, add default duration[m
+[31m-            summaryData[task.dogName]['walkMinutesToday'] += 30;[m
+[32m+[m[41m[m
+[32m+[m[32m        // add walk statistics[m[41m[m
+[32m+[m[32m        else if (task.taskType == 'Walk' || task.taskType == 'Exercise') {[m[41m[m
+[32m+[m[32m          summaryData[task.dogName]['totalWalks']++;[m[41m[m
+[32m+[m[32m          if (isToday) {[m[41m[m
+[32m+[m[32m            // duration from notes[m[41m[m
+[32m+[m[32m            try {[m[41m[m
+[32m+[m[32m              final durationText = task.notes.split(' ').firstWhere([m[41m[m
+[32m+[m[32m                    (part) => RegExp(r'^\d+$').hasMatch(part),[m[41m[m
+[32m+[m[32m                    orElse: () => '0',[m[41m[m
+[32m+[m[32m                  );[m[41m[m
+[32m+[m[32m              int duration = int.tryParse(durationText) ?? 0;[m[41m[m
+[32m+[m[32m              summaryData[task.dogName]['walkMinutesToday'] += duration;[m[41m[m
+[32m+[m[32m            } catch (_) {[m[41m[m
+[32m+[m[32m              // If parsing fails, add default duration[m[41m[m
+[32m+[m[32m              summaryData[task.dogName]['walkMinutesToday'] += 30;[m[41m[m
+[32m+[m[32m            }[m[41m[m
+           }[m
+         }[m
+[31m-      }[m
+[31m-      [m
+[31m-      //  vet visit statistics[m
+[31m-      else if (task.taskType == 'Vet Visit') {[m
+[31m-        if (!task.isDone && task.date.isAfter(now)) {[m
+[31m-          summaryData[task.dogName]['upcomingVetVisits']++;[m
+[32m+[m[41m[m
+[32m+[m[32m        //  vet visit statistics[m[41m[m
+[32m+[m[32m        else if (task.taskType == 'Vet Visit') {[m[41m[m
+[32m+[m[32m          if (!task.isDone && task.date.isAfter(now)) {[m[41m[m
+[32m+[m[32m            summaryData[task.dogName]['upcomingVetVisits']++;[m[41m[m
+[32m+[m[32m          }[m[41m[m
+         }[m
+       }[m
+[32m+[m[32m    } catch (e, stackTrace) {[m[41m[m
+[32m+[m[32m      print('Error calculating summary data: $e');[m[41m[m
+[32m+[m[32m      print('Stack trace: $stackTrace');[m[41m[m
+[32m+[m[32m      summaryData = {};[m[41m[m
+     }[m
+[31m-  } catch (e, stackTrace) {[m
+[31m-    print('Error calculating summary data: $e');[m
+[31m-    print('Stack trace: $stackTrace');[m
+[31m-    summaryData = {};[m
+   }[m
+[31m-}[m
+ [m
+   @override[m
+   Widget build(BuildContext context) {[m
+[36m@@ -353,9 +356,7 @@[m [mclass _ActivityDetailsScreenState extends State<ActivityDetailsScreen>[m
+       ),[m
+       body: Column([m
+         children: [[m
+[31m-[m
+           _buildSummarySection(),[m
+[31m-          [m
+           Expanded([m
+             child: TabBarView([m
+               controller: _tabController,[m
+[36m@@ -372,6 +373,7 @@[m [mclass _ActivityDetailsScreenState extends State<ActivityDetailsScreen>[m
+         onPressed: _addTask,[m
+         child: const Icon(Icons.add),[m
+       ),[m
+[32m+[m[32m      // bottomNavigationBar: const CustomNavBar(currentIndex: 2),[m[41m[m
+     );[m
+   }[m
+ [m
+[36m@@ -396,107 +398,110 @@[m [mclass _ActivityDetailsScreenState extends State<ActivityDetailsScreen>[m
+   }[m
+ [m
+   Widget _buildFoodWaterSummary() {[m
+[31m-  return Container([m
+[31m-    padding: const EdgeInsets.all(16.0),[m
+[31m-    color: Colors.orange.shade50,[m
+[31m-    child: Column([m
+[31m-      crossAxisAlignment: CrossAxisAlignment.start,[m
+[31m-      children: [[m
+[31m-        const Text([m
+[31m-          'Feeding Summary',[m
+[31m-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),[m
+[31m-        ),[m
+[31m-        const SizedBox(height: 8),[m
+[31m-        ...dogs.map((dog) {[m
+[31m-          final data = summaryData[dog.name];[m
+[31m-          if (data == null) {[m
+[31m-            return const SizedBox.shrink(); // skip[m
+[31m-          }[m
+[31m-          final lastFed = data['lastFed'] as DateTime?;[m
+[31m-          final lastFedText = lastFed != null[m
+[31m-              ? '${lastFed.day}/${lastFed.month} at ${lastFed.hour}:${lastFed.minute.toString().padLeft(2, '0')}'[m
+[31m-              : 'Not recorded';[m
+[31m-          [m
+[31m-          return Padding([m
+[31m-            padding: const EdgeInsets.only(bottom: 4),[m
+[31m-            child: Row([m
+[31m-              children: [[m
+[31m-                Expanded(child: Text(dog.name)),[m
+[31m-                Text('${data['todayFeedings']} meals today • Last fed: $lastFedText'),[m
+[31m-              ],[m
+[31m-            ),[m
+[31m-          );[m
+[31m-        }).toList(),[m
+[31m-      ],[m
+[31m-    ),[m
+[31m-  );[m
+[31m-}[m
+[32m+[m[32m    return Container([m[41m[m
+[32m+[m[32m      padding: const EdgeInsets.all(16.0),[m[41m[m
+[32m+[m[32m      color: Colors.orange.shade50,[m[41m[m
+[32m+[m[32m      child: Column([m[41m[m
+[32m+[m[32m        crossAxisAlignment: CrossAxisAlignment.start,[m[41m[m
+[32m+[m[32m        children: [[m[41m[m
+[32m+[m[32m          const Text([m[41m[m
+[32m+[m[32m            'Feeding Summary',[m[41m[m
+[32m+[m[32m            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),[m[41m[m
+[32m+[m[32m          ),[m[41m[m
+[32m+[m[32m          const SizedBox(height: 8),[m[41m[m
+[32m+[m[32m          ...dogs.map((dog) {[m[41m[m
+[32m+[m[32m            final data = summaryData[dog.name];[m[41m[m
+[32m+[m[32m            if (data == null) {[m[41m[m
+[32m+[m[32m              return const SizedBox.shrink(); // skip[m[41m[m
+[32m+[m[32m            }[m[41m[m
+[32m+[m[32m            final lastFed = data['lastFed'] as DateTime?;[m[41m[m
+[32m+[m[32m            final lastFedText = lastFed != null[m[41m[m
+[32m+[m[32m                ? '${lastFed.day}/${lastFed.month} at ${lastFed.hour}:${lastFed.minute.toString().padLeft(2, '0')}'[m[41m[m
+[32m+[m[32m                : 'Not recorded';[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            return Padding([m[41m[m
+[32m+[m[32m              padding: const EdgeInsets.only(bottom: 4),[m[41m[m
+[32m+[m[32m              child: Row([m[41m[m
+[32m+[m[32m                children: [[m[41m[m
+[32m+[m[32m                  Expanded(child: Text(dog.name)),[m[41m[m
+[32m+[m[32m                  Text([m[41m[m
+[32m+[m[32m                      '${data['todayFeedings']} meals today • Last fed: $lastFedText'),[m[41m[m
+[32m+[m[32m                ],[m[41m[m
+[32m+[m[32m              ),[m[41m[m
+[32m+[m[32m            );[m[41m[m
+[32m+[m[32m          }).toList(),[m[41m[m
+[32m+[m[32m        ],[m[41m[m
+[32m+[m[32m      ),[m[41m[m
+[32m+[m[32m    );[m[41m[m
+[32m+[m[32m  }[m[41m[m
+ [m
+   Widget _buildExerciseSummary() {[m
+[31m-  return Container([m
+[31m-    padding: const EdgeInsets.all(16.0),[m
+[31m-    color: Colors.green.shade50,[m
+[31m-    child: Column([m
+[31m-      crossAxisAlignment: CrossAxisAlignment.start,[m
+[31m-      children: [[m
+[31m-        const Text([m
+[31m-          'Exercise Summary',[m
+[31m-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),[m
+[31m-        ),[m
+[31m-        const SizedBox(height: 8),[m
+[31m-        ...dogs.map((dog) {[m
+[31m-          final data = summaryData[dog.name];[m
+[31m-          if (data == null) {[m
+[31m-            return const SizedBox.shrink(); // skip[m
+[31m-          }[m
+[31m-          [m
+[31m-          return Padding([m
+[31m-            padding: const EdgeInsets.only(bottom: 4),[m
+[31m-            child: Row([m
+[31m-              children: [[m
+[31m-                Expanded(child: Text(dog.name)),[m
+[31m-                Text('Total walks: ${data['totalWalks']} • Today: ${data['walkMinutesToday']} minutes'),[m
+[31m-              ],[m
+[31m-            ),[m
+[31m-          );[m
+[31m-        }).toList(),[m
+[31m-      ],[m
+[31m-    ),[m
+[31m-  );[m
+[31m-}[m
+[32m+[m[32m    return Container([m[41m[m
+[32m+[m[32m      padding: const EdgeInsets.all(16.0),[m[41m[m
+[32m+[m[32m      color: Colors.green.shade50,[

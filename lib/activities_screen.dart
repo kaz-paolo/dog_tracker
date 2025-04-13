@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dog_list_manager.dart';
 import 'dog.dart';
-import 'activity_manager.dart'; // New import
+import 'activity_manager.dart';
+import 'custom_navbar.dart';
 
 class ActivityTask {
   final String taskType;
@@ -24,8 +25,10 @@ class ActivityTask {
     return {
       'taskType': taskType,
       'dogName': dogName,
-      'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-      'time': '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
+      'date':
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+      'time':
+          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
       'notes': notes,
       'isDone': isDone,
     };
@@ -34,7 +37,7 @@ class ActivityTask {
   static ActivityTask fromJson(Map<String, dynamic> json) {
     final dateParts = json['date'].split('-');
     final timeParts = json['time'].split(':');
-    
+
     return ActivityTask(
       taskType: json['taskType'],
       dogName: json['dogName'],
@@ -117,6 +120,7 @@ class ActivitiesScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const CustomNavBar(currentIndex: 2),
     );
   }
 
@@ -180,14 +184,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   String? selectedTaskType;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-  
+
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _distanceController = TextEditingController();
-  
+
   //store tasks
   List<ActivityTask> tasks = [];
 
@@ -253,89 +257,88 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     }
   }
 
-
   void _calculateSummaryData() {
-  if (dogs.isEmpty) return;
+    if (dogs.isEmpty) return;
 
-  try {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    
-    // Initialize summary structure
-    summaryData = {};
-    for (var dog in dogs) {
-      summaryData[dog.name] = {
-        'totalFeedings': 0,
-        'todayFeedings': 0,
-        'lastFed': null,
-        'totalWalks': 0,
-        'walkMinutesToday': 0,
-        'upcomingVetVisits': 0,
-      };
-    }
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
 
-    // calculate statistics
-    for (var task in tasks) {
-      if (!summaryData.containsKey(task.dogName)) continue;
-
-      final taskDate = DateTime(task.date.year, task.date.month, task.date.day);
-      final isToday = taskDate.year == today.year && 
-                      taskDate.month == today.month && 
-                      taskDate.day == today.day;
-
-      if (task.taskType == 'Feed') {
-        summaryData[task.dogName]['totalFeedings']++;
-        if (isToday) {
-          summaryData[task.dogName]['todayFeedings']++;
-        }
-        
-        final taskDateTime = DateTime(
-          task.date.year, 
-          task.date.month, 
-          task.date.day,
-          task.time.hour,
-          task.time.minute,
-        );
-        
-        final lastFed = summaryData[task.dogName]['lastFed'];
-        if (lastFed == null || 
-            taskDateTime.isAfter(lastFed)) {
-          summaryData[task.dogName]['lastFed'] = taskDateTime;
-        }
+      // Initialize summary structure
+      summaryData = {};
+      for (var dog in dogs) {
+        summaryData[dog.name] = {
+          'totalFeedings': 0,
+          'todayFeedings': 0,
+          'lastFed': null,
+          'totalWalks': 0,
+          'walkMinutesToday': 0,
+          'upcomingVetVisits': 0,
+        };
       }
-      
-      // add walk statistics
-      else if (task.taskType == 'Walk' || task.taskType == 'Exercise') {
-        summaryData[task.dogName]['totalWalks']++;
-        if (isToday) {
-          // duration from notes
-          try {
-            final durationText = task.notes.split(' ').firstWhere(
-              (part) => RegExp(r'^\d+$').hasMatch(part),
-              orElse: () => '0',
-            );
-            int duration = int.tryParse(durationText) ?? 0;
-            summaryData[task.dogName]['walkMinutesToday'] += duration;
-          } catch (_) {
-            // If parsing fails, add default duration
-            summaryData[task.dogName]['walkMinutesToday'] += 30;
+
+      // calculate statistics
+      for (var task in tasks) {
+        if (!summaryData.containsKey(task.dogName)) continue;
+
+        final taskDate =
+            DateTime(task.date.year, task.date.month, task.date.day);
+        final isToday = taskDate.year == today.year &&
+            taskDate.month == today.month &&
+            taskDate.day == today.day;
+
+        if (task.taskType == 'Feed') {
+          summaryData[task.dogName]['totalFeedings']++;
+          if (isToday) {
+            summaryData[task.dogName]['todayFeedings']++;
+          }
+
+          final taskDateTime = DateTime(
+            task.date.year,
+            task.date.month,
+            task.date.day,
+            task.time.hour,
+            task.time.minute,
+          );
+
+          final lastFed = summaryData[task.dogName]['lastFed'];
+          if (lastFed == null || taskDateTime.isAfter(lastFed)) {
+            summaryData[task.dogName]['lastFed'] = taskDateTime;
+          }
+        }
+
+        // add walk statistics
+        else if (task.taskType == 'Walk' || task.taskType == 'Exercise') {
+          summaryData[task.dogName]['totalWalks']++;
+          if (isToday) {
+            // duration from notes
+            try {
+              final durationText = task.notes.split(' ').firstWhere(
+                    (part) => RegExp(r'^\d+$').hasMatch(part),
+                    orElse: () => '0',
+                  );
+              int duration = int.tryParse(durationText) ?? 0;
+              summaryData[task.dogName]['walkMinutesToday'] += duration;
+            } catch (_) {
+              // If parsing fails, add default duration
+              summaryData[task.dogName]['walkMinutesToday'] += 30;
+            }
+          }
+        }
+
+        //  vet visit statistics
+        else if (task.taskType == 'Vet Visit') {
+          if (!task.isDone && task.date.isAfter(now)) {
+            summaryData[task.dogName]['upcomingVetVisits']++;
           }
         }
       }
-      
-      //  vet visit statistics
-      else if (task.taskType == 'Vet Visit') {
-        if (!task.isDone && task.date.isAfter(now)) {
-          summaryData[task.dogName]['upcomingVetVisits']++;
-        }
-      }
+    } catch (e, stackTrace) {
+      print('Error calculating summary data: $e');
+      print('Stack trace: $stackTrace');
+      summaryData = {};
     }
-  } catch (e, stackTrace) {
-    print('Error calculating summary data: $e');
-    print('Stack trace: $stackTrace');
-    summaryData = {};
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -353,9 +356,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       ),
       body: Column(
         children: [
-
           _buildSummarySection(),
-          
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -372,6 +373,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
         onPressed: _addTask,
         child: const Icon(Icons.add),
       ),
+      // bottomNavigationBar: const CustomNavBar(currentIndex: 2),
     );
   }
 
@@ -396,107 +398,110 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   }
 
   Widget _buildFoodWaterSummary() {
-  return Container(
-    padding: const EdgeInsets.all(16.0),
-    color: Colors.orange.shade50,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Feeding Summary',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        const SizedBox(height: 8),
-        ...dogs.map((dog) {
-          final data = summaryData[dog.name];
-          if (data == null) {
-            return const SizedBox.shrink(); // skip
-          }
-          final lastFed = data['lastFed'] as DateTime?;
-          final lastFedText = lastFed != null
-              ? '${lastFed.day}/${lastFed.month} at ${lastFed.hour}:${lastFed.minute.toString().padLeft(2, '0')}'
-              : 'Not recorded';
-          
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              children: [
-                Expanded(child: Text(dog.name)),
-                Text('${data['todayFeedings']} meals today • Last fed: $lastFedText'),
-              ],
-            ),
-          );
-        }).toList(),
-      ],
-    ),
-  );
-}
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      color: Colors.orange.shade50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Feeding Summary',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          ...dogs.map((dog) {
+            final data = summaryData[dog.name];
+            if (data == null) {
+              return const SizedBox.shrink(); // skip
+            }
+            final lastFed = data['lastFed'] as DateTime?;
+            final lastFedText = lastFed != null
+                ? '${lastFed.day}/${lastFed.month} at ${lastFed.hour}:${lastFed.minute.toString().padLeft(2, '0')}'
+                : 'Not recorded';
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Expanded(child: Text(dog.name)),
+                  Text(
+                      '${data['todayFeedings']} meals today • Last fed: $lastFedText'),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
 
   Widget _buildExerciseSummary() {
-  return Container(
-    padding: const EdgeInsets.all(16.0),
-    color: Colors.green.shade50,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Exercise Summary',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        const SizedBox(height: 8),
-        ...dogs.map((dog) {
-          final data = summaryData[dog.name];
-          if (data == null) {
-            return const SizedBox.shrink(); // skip
-          }
-          
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              children: [
-                Expanded(child: Text(dog.name)),
-                Text('Total walks: ${data['totalWalks']} • Today: ${data['walkMinutesToday']} minutes'),
-              ],
-            ),
-          );
-        }).toList(),
-      ],
-    ),
-  );
-}
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      color: Colors.green.shade50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Exercise Summary',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          ...dogs.map((dog) {
+            final data = summaryData[dog.name];
+            if (data == null) {
+              return const SizedBox.shrink(); // skip
+            }
 
-Widget _buildHealthSummary() {
-  return Container(
-    padding: const EdgeInsets.all(16.0),
-    color: Colors.red.shade50,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Health Summary',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        const SizedBox(height: 8),
-        ...dogs.map((dog) {
-          final data = summaryData[dog.name];
-          if (data == null) {
-            return const SizedBox.shrink(); // skip
-          }
-          
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              children: [
-                Expanded(child: Text(dog.name)),
-                Text('Upcoming vet visits: ${data['upcomingVetVisits']}'),
-              ],
-            ),
-          );
-        }).toList(),
-      ],
-    ),
-  );
-}
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Expanded(child: Text(dog.name)),
+                  Text(
+                      'Total walks: ${data['totalWalks']} • Today: ${data['walkMinutesToday']} minutes'),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthSummary() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      color: Colors.red.shade50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Health Summary',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          ...dogs.map((dog) {
+            final data = summaryData[dog.name];
+            if (data == null) {
+              return const SizedBox.shrink(); // skip
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Expanded(child: Text(dog.name)),
+                  Text('Upcoming vet visits: ${data['upcomingVetVisits']}'),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
   void _updateTaskStatus(ActivityTask task, bool isDone) {
     setState(() {
       task.isDone = isDone;
@@ -519,30 +524,39 @@ Widget _buildHealthSummary() {
     // filtering
     List<ActivityTask> activityTypeTasks = [];
     if (widget.title == 'Food and Water') {
-      activityTypeTasks = tasks.where((task) => 
-        ['Feed', 'Water', 'Buy Food'].contains(task.taskType)).toList();
+      activityTypeTasks = tasks
+          .where(
+              (task) => ['Feed', 'Water', 'Buy Food'].contains(task.taskType))
+          .toList();
     } else if (widget.title == 'Exercise') {
-      activityTypeTasks = tasks.where((task) => 
-        ['Exercise', 'Walk', 'Play'].contains(task.taskType)).toList();
+      activityTypeTasks = tasks
+          .where((task) => ['Exercise', 'Walk', 'Play'].contains(task.taskType))
+          .toList();
     } else if (widget.title == 'Health') {
-      activityTypeTasks = tasks.where((task) => 
-        ['Vet Visit', 'Medication', 'Vaccination', 'Weigh'].contains(task.taskType)).toList();
+      activityTypeTasks = tasks
+          .where((task) => ['Vet Visit', 'Medication', 'Vaccination', 'Weigh']
+              .contains(task.taskType))
+          .toList();
     } else {
       activityTypeTasks = tasks;
     }
 
     //  filter by status
     if (status == 'Upcoming') {
-      filteredTasks = activityTypeTasks.where((task) => 
-        !task.isDone && 
-        (task.date.isAfter(now) || 
-         (task.date.year == now.year && task.date.month == now.month && task.date.day == now.day))
-      ).toList();
+      filteredTasks = activityTypeTasks
+          .where((task) =>
+              !task.isDone &&
+              (task.date.isAfter(now) ||
+                  (task.date.year == now.year &&
+                      task.date.month == now.month &&
+                      task.date.day == now.day)))
+          .toList();
     } else if (status == 'Overdue') {
-      filteredTasks = activityTypeTasks.where((task) => 
-        !task.isDone && 
-        task.date.isBefore(DateTime(now.year, now.month, now.day))
-      ).toList();
+      filteredTasks = activityTypeTasks
+          .where((task) =>
+              !task.isDone &&
+              task.date.isBefore(DateTime(now.year, now.month, now.day)))
+          .toList();
     } else if (status == 'Done') {
       filteredTasks = activityTypeTasks.where((task) => task.isDone).toList();
     }
@@ -566,7 +580,8 @@ Widget _buildHealthSummary() {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Dog: ${task.dogName}'),
-                Text('Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')} at ${task.time.format(context)}'),
+                Text(
+                    'Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')} at ${task.time.format(context)}'),
                 if (task.notes.isNotEmpty) Text('Notes: ${task.notes}'),
               ],
             ),
@@ -584,17 +599,27 @@ Widget _buildHealthSummary() {
 
   Widget _getIconForTaskType(String taskType) {
     switch (taskType) {
-      case 'Feed': return const Icon(Icons.restaurant);
-      case 'Water': return const Icon(Icons.local_drink);
-      case 'Buy Food': return const Icon(Icons.shopping_cart);
-      case 'Exercise': 
-      case 'Walk': return const Icon(Icons.directions_walk);
-      case 'Play': return const Icon(Icons.toys);
-      case 'Vet Visit': return const Icon(Icons.medical_services);
-      case 'Medication': return const Icon(Icons.medication);
-      case 'Vaccination': return const Icon(Icons.vaccines);
-      case 'Weigh': return const Icon(Icons.monitor_weight);
-      default: return const Icon(Icons.pets);
+      case 'Feed':
+        return const Icon(Icons.restaurant);
+      case 'Water':
+        return const Icon(Icons.local_drink);
+      case 'Buy Food':
+        return const Icon(Icons.shopping_cart);
+      case 'Exercise':
+      case 'Walk':
+        return const Icon(Icons.directions_walk);
+      case 'Play':
+        return const Icon(Icons.toys);
+      case 'Vet Visit':
+        return const Icon(Icons.medical_services);
+      case 'Medication':
+        return const Icon(Icons.medication);
+      case 'Vaccination':
+        return const Icon(Icons.vaccines);
+      case 'Weigh':
+        return const Icon(Icons.monitor_weight);
+      default:
+        return const Icon(Icons.pets);
     }
   }
 
@@ -609,9 +634,9 @@ Widget _buildHealthSummary() {
     _amountController.clear();
     _durationController.clear();
     _distanceController.clear();
-    
+
     await _loadDogs();
-  
+
     //  dialog to add new task
     final result = await showDialog<ActivityTask>(
       context: context,
@@ -658,7 +683,8 @@ Widget _buildHealthSummary() {
                         if (pickedDate != null) {
                           setState(() {
                             selectedDate = pickedDate;
-                            _dateController.text = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                            _dateController.text =
+                                "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
                           });
                         }
                       },
@@ -678,15 +704,18 @@ Widget _buildHealthSummary() {
                         if (pickedTime != null) {
                           setState(() {
                             selectedTime = pickedTime;
-                            _timeController.text = "${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                            _timeController.text =
+                                "${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}";
                           });
                         }
                       },
                     ),
-                    if (widget.title == 'Food and Water' && selectedTaskType == 'Feed')
+                    if (widget.title == 'Food and Water' &&
+                        selectedTaskType == 'Feed')
                       TextFormField(
                         controller: _amountController,
-                        decoration: const InputDecoration(labelText: 'Amount (g)'),
+                        decoration:
+                            const InputDecoration(labelText: 'Amount (g)'),
                         keyboardType: TextInputType.number,
                       ),
                     TextFormField(
@@ -704,10 +733,13 @@ Widget _buildHealthSummary() {
                 ),
                 TextButton(
                   onPressed: () {
-                    if (selectedDog == null || selectedTaskType == null || 
-                        selectedDate == null || selectedTime == null) {
+                    if (selectedDog == null ||
+                        selectedTaskType == null ||
+                        selectedDate == null ||
+                        selectedTime == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please fill all required fields')),
+                        const SnackBar(
+                            content: Text('Please fill all required fields')),
                       );
                       return;
                     }
@@ -730,7 +762,7 @@ Widget _buildHealthSummary() {
         );
       },
     );
-  
+
     // add the new task and save
     if (result != null) {
       setState(() {
@@ -769,7 +801,7 @@ Widget _buildHealthSummary() {
         DropdownMenuItem(value: 'Weigh', child: Text('Weigh')),
       ];
     }
-    
+
     return const [
       DropdownMenuItem(value: 'Feed', child: Text('Feed')),
       DropdownMenuItem(value: 'Water', child: Text('Water')),
@@ -780,7 +812,7 @@ Widget _buildHealthSummary() {
 
   Widget _buildTaskTypeDropdown(String category, StateSetter setStateDialog) {
     List<String> taskTypes = [];
-    
+
     if (category == 'Food and Water') {
       taskTypes = ['Feed', 'Water', 'Buy Food'];
     } else if (category == 'Exercise') {
@@ -788,7 +820,7 @@ Widget _buildHealthSummary() {
     } else if (category == 'Health') {
       taskTypes = ['Vet Visit', 'Medication', 'Vaccination', 'Weigh'];
     }
-    
+
     return DropdownButtonFormField<String>(
       value: selectedTaskType,
       hint: const Text('Select Task Type'),
@@ -807,14 +839,16 @@ Widget _buildHealthSummary() {
     );
   }
 
-  Widget _buildActivitySpecificFields(String? taskType, StateSetter setModalState) {
+  Widget _buildActivitySpecificFields(
+      String? taskType, StateSetter setModalState) {
     if (taskType == null) return const SizedBox.shrink();
-    
+
     if (['Feed', 'Water'].contains(taskType)) {
       return TextFormField(
         controller: _amountController,
         decoration: InputDecoration(
-          labelText: taskType == 'Feed' ? 'Amount (cups/grams)' : 'Water Amount (ml)',
+          labelText:
+              taskType == 'Feed' ? 'Amount (cups/grams)' : 'Water Amount (ml)',
         ),
         keyboardType: TextInputType.number,
       );
@@ -828,7 +862,8 @@ Widget _buildHealthSummary() {
           ),
           TextFormField(
             controller: _distanceController,
-            decoration: const InputDecoration(labelText: 'Distance (km, optional)'),
+            decoration:
+                const InputDecoration(labelText: 'Distance (km, optional)'),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
         ],
@@ -840,7 +875,7 @@ Widget _buildHealthSummary() {
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
       );
     }
-    
+
     return const SizedBox.shrink();
   }
 }
