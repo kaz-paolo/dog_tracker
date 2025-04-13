@@ -6,7 +6,6 @@ import 'activities_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-
   runApp(const MyApp());
 }
 
@@ -25,7 +24,14 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.poppinsTextTheme(
             Theme.of(context).textTheme,
           )),
-      home: const MyHomePage(title: 'Dog Tracker'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/dogs': (context) => const DogListScreen(),
+        '/activities': (context) => const ActivitiesScreen(),
+        '/settings': (context) => const Placeholder(),
+      },
     );
   }
 }
@@ -46,50 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              },
-              child: const Text('Go to Home Screen'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const DogListScreen()),
-                );
-              },
-              child: const Text('View My Dogs'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SplashScreen()),
-                );
-              },
-              child: const Text('Go to Splash Screen'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ActivitiesScreen()),
-                );
-              },
-              child: const Text('Go to Activities'),
-            ),
-          ],
-        ),
       ),
     );
   }
