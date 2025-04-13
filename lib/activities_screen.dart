@@ -2,7 +2,8 @@ import 'package:dog_tracker/custom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'dog_list_manager.dart';
 import 'dog.dart';
-import 'activity_manager.dart'; // New import
+import 'activity_manager.dart';
+import 'custom_navbar.dart';
 
 class ActivityTask {
   final String taskType;
@@ -373,6 +374,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
         onPressed: _addTask,
         child: const Icon(Icons.add),
       ),
+      // bottomNavigationBar: const CustomNavBar(currentIndex: 2),
     );
   }
 

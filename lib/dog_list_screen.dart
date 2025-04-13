@@ -7,6 +7,7 @@ import 'dog.dart';
 import 'dog_list_manager.dart';
 import 'add_dog_screen.dart';
 import 'dog_profile_screen.dart';
+import 'custom_navbar.dart';
 
 class DogListScreen extends StatefulWidget {
   const DogListScreen({super.key});

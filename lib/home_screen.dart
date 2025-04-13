@@ -1,6 +1,5 @@
-import 'package:dog_tracker/custom_navbar.dart';
-import 'package:flutter/material.dart';
-// ignore: unused_import
+
+import 'custom_navbar.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 
