@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dog_tracker/custom_navbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -72,27 +73,7 @@ class _DogListScreenState extends State<DogListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Nav Bar
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: false,
-        currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) {
-            // Home button - navigate to main screen
-            Navigator.pushReplacementNamed(context, '/');
-          }
-          // You can add more navigation options for other buttons here
-        },
-        elevation: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Dogs'),
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Activities'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
-      ),
+      bottomNavigationBar: const CustomNavBar(currentIndex: 1),
 
       // Main Screen
       body: SafeArea(
