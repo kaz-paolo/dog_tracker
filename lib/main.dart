@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'dog_list_screen.dart';
 import 'activities_screen.dart';
+import 'settings_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dog Tracker',
+      title: 'WoofWatch', 
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
           fontFamily: 'Poppins',
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/dogs': (context) => const DogListScreen(),
         '/activities': (context) => const ActivitiesScreen(),
-        '/settings': (context) => const Placeholder(),
+        '/settings': (context) => const SettingsScreen(),
       },
     );
   }
