@@ -418,27 +418,51 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
         final task = filteredTasks[index];
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            leading: _getIconForTaskType(task.taskType),
-            title: Text(task.taskType),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Dog: ${task.dogName}'),
-                Text(
-                    'Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')} at ${task.time.format(context)}'),
-                if (task.notes.isNotEmpty) Text('Notes: ${task.notes}'),
-              ],
-            ),
-            trailing: status == 'Done' 
-                ? const Icon(Icons.check_circle, color: Colors.green)
-                : Checkbox(
-                    value: task.isDone,
-                    onChanged: (value) {
-                      _updateTaskStatus(task, value ?? false);
-                    },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListTile(
+                leading: _getIconForTaskType(task.taskType),
+                title: Text(task.taskType),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Dog: ${task.dogName}'),
+                    Text(
+                        'Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')} at ${task.time.format(context)}'),
+                    if (task.notes.isNotEmpty) Text('Notes: ${task.notes}'),
+                  ],
+                ),
+                trailing: status == 'Done' 
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : Checkbox(
+                        value: task.isDone,
+                        onChanged: (value) {
+                          _updateTaskStatus(task, value ?? false);
+                        },
+                      ),
+                onTap: () => _showTaskDetails(context, task),
+              ),
+              // Add repeating label if task is repeating
+              if (task.repeatInterval != null && task.repeatInterval!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0, left: 16.0),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.repeat, size: 16, color: Colors.blue),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Repeating: ${_getRepeatText(task.repeatInterval!)}',
+                        style: TextStyle(
+                          color: const Color.fromARGB(255, 210, 133, 25),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-            onTap: () => _showTaskDetails(context, task),
+                ),
+            ],
           ),
         );
       },
