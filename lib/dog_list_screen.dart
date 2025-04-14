@@ -145,7 +145,28 @@ class _DogListScreenState extends State<DogListScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DogProfileScreen(dog: dog),
+                            builder: (context) => DogProfileScreen(
+                              dog: dog,
+                              onEdit: (updatedDog) {
+                                setState(() {
+                                  final index = allDogs.indexWhere(
+                                      (d) => d.name == updatedDog.name);
+                                  if (index != -1) {
+                                    allDogs[index] = updatedDog;
+                                    _filterDogs();
+                                    _saveDogs();
+                                  }
+                                });
+                              },
+                              onDelete: (deletedDog) {
+                                setState(() {
+                                  allDogs.removeWhere(
+                                      (d) => d.name == deletedDog.name);
+                                  _filterDogs();
+                                  _saveDogs();
+                                });
+                              },
+                            ),
                           ),
                         );
                       },

@@ -1,17 +1,74 @@
 import 'dart:io';
 import 'package:dog_tracker/custom_navbar.dart';
+import 'package:dog_tracker/edit_dog_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dog.dart';
 
-class DogProfileScreen extends StatelessWidget {
+class DogProfileScreen extends StatefulWidget {
   final Dog dog;
+  final Function(Dog) onEdit;
+  final Function(Dog) onDelete;
 
-  const DogProfileScreen({super.key, required this.dog});
+  const DogProfileScreen({
+    super.key,
+    required this.dog,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  _DogProfileScreenState createState() => _DogProfileScreenState();
+}
+
+class _DogProfileScreenState extends State<DogProfileScreen> {
+  late Dog currentDog;
+
+  @override
+  void initState() {
+    super.initState();
+    currentDog = widget.dog; // Set initial dog value
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'edit',
+            backgroundColor: const Color(0xFFFA9B63),
+            onPressed: () async {
+              final updatedDog = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditDogScreen(
+                    initialDog: currentDog,
+                    onSave: (updatedDog) {
+                      setState(() {
+                        currentDog = updatedDog;
+                      });
+                    },
+                  ),
+                ),
+              );
+              if (updatedDog != null) {
+                widget.onEdit(updatedDog);
+              }
+            },
+            child: const Icon(Icons.edit, color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'delete',
+            backgroundColor: Colors.red,
+            onPressed: () {
+              _showDeleteConfirmation(context);
+            },
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -54,14 +111,14 @@ class DogProfileScreen extends StatelessWidget {
                   radius: 80,
                   backgroundColor: Colors.orange.shade100,
                   child: ClipOval(
-                    child: _buildDogImage(dog),
+                    child: _buildDogImage(currentDog),
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // Dog's name
                 Text(
-                  dog.name,
+                  currentDog.name,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -75,11 +132,11 @@ class DogProfileScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildInfoItem(Icons.cake, dog.birthDate),
+                    _buildInfoItem(Icons.cake, currentDog.birthDate),
                     const SizedBox(width: 32),
-                    _buildInfoItem(Icons.pets, dog.breed),
+                    _buildInfoItem(Icons.pets, currentDog.breed),
                     const SizedBox(width: 32),
-                    _buildInfoItem(Icons.monitor_weight, dog.weight),
+                    _buildInfoItem(Icons.monitor_weight, currentDog.weight),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -89,11 +146,11 @@ class DogProfileScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildInfoItem(Icons.access_time, dog.age),
+                    _buildInfoItem(Icons.access_time, currentDog.age),
                     const SizedBox(width: 32),
-                    _buildInfoItem(Icons.favorite, dog.health),
+                    _buildInfoItem(Icons.favorite, currentDog.health),
                     const SizedBox(width: 32),
-                    _buildInfoItem(Icons.female, dog.gender),
+                    _buildInfoItem(Icons.female, currentDog.gender),
                   ],
                 ),
                 const SizedBox(height: 40),
@@ -125,6 +182,30 @@ class DogProfileScreen extends StatelessWidget {
               fontSize: 14,
               height: 1.2,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Dog'),
+        content: const Text('Are you sure you want to delete this dog?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.onDelete(currentDog);
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Go back from profile
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

@@ -54,4 +54,53 @@ class Dog {
       health: json['health'] ?? '',
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Dog &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          breed == other.breed &&
+          gender == other.gender &&
+          imagePath == other.imagePath &&
+          birthDate == other.birthDate &&
+          weight == other.weight &&
+          age == other.age &&
+          health == other.health;
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      breed.hashCode ^
+      gender.hashCode ^
+      imagePath.hashCode ^
+      birthDate.hashCode ^
+      weight.hashCode ^
+      age.hashCode ^
+      health.hashCode;
+
+  Dog copyWith({
+    String? name,
+    String? breed,
+    String? gender,
+    String? imagePath,
+    Uint8List? imageBytes,
+    String? birthDate,
+    String? weight,
+    String? age,
+    String? health,
+  }) {
+    return Dog(
+      name: name ?? this.name,
+      breed: breed ?? this.breed,
+      gender: gender ?? this.gender,
+      imagePath: imagePath ?? this.imagePath,
+      imageBytes: imageBytes ?? this.imageBytes,
+      birthDate: birthDate ?? this.birthDate,
+      weight: weight ?? this.weight,
+      age: age ?? this.age,
+      health: health ?? this.health,
+    );
+  }
 }
