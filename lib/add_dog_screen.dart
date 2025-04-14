@@ -115,11 +115,27 @@ class _AddDogScreenState extends State<AddDogScreen> {
       },
     );
 
-    // update the birthdate if a date is picked
+    // Update the birthdate if a date is picked
     if (picked != null) {
       birthDateController.text =
           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+
+      // Calculate age
+      final age = _calculateAge(picked);
+      ageController.text = '$age yrs'; // Automatically update age field
     }
+  }
+
+// Function to calculate age based on birthdate
+  int _calculateAge(DateTime birthDate) {
+    final currentDate = DateTime.now();
+    int age = currentDate.year - birthDate.year;
+    if (currentDate.month < birthDate.month ||
+        (currentDate.month == birthDate.month &&
+            currentDate.day < birthDate.day)) {
+      age--; // Subtract one if the birthday hasn't occurred yet this year
+    }
+    return age;
   }
 
   // validate and submit dog date
@@ -252,16 +268,13 @@ class _AddDogScreenState extends State<AddDogScreen> {
                         : null,
               ),
 
-              // age controller (numbers only)
+              // Read-only TextFormField for displaying the calculated age
               TextFormField(
                 controller: ageController,
                 decoration: const InputDecoration(labelText: 'Age (years)'),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                readOnly: true, // Make it read-only so the user can't edit it
                 validator: (value) =>
-                    value == null || value.replaceAll(RegExp(r'\D'), '').isEmpty
-                        ? 'Required'
-                        : null,
+                    value == null || value.isEmpty ? 'Required' : null,
               ),
 
               // health status dropdown
