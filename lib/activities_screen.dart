@@ -2,7 +2,7 @@ import 'package:dog_tracker/custom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'dog_list_manager.dart';
 import 'dog.dart';
-import 'activity_manager.dart'; // New import
+import 'activity_manager.dart';
 
 class ActivityTask {
   final String taskType;
@@ -11,6 +11,7 @@ class ActivityTask {
   final TimeOfDay time;
   final String notes;
   bool isDone;
+  final String? repeatInterval;
 
   ActivityTask({
     required this.taskType,
@@ -19,6 +20,7 @@ class ActivityTask {
     required this.time,
     this.notes = '',
     this.isDone = false,
+    this.repeatInterval,
   });
 
   Map<String, dynamic> toJson() {
@@ -31,6 +33,7 @@ class ActivityTask {
           '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
       'notes': notes,
       'isDone': isDone,
+      'repeatInterval': repeatInterval,
     };
   }
 
@@ -52,6 +55,7 @@ class ActivityTask {
       ),
       notes: json['notes'] ?? '',
       isDone: json['isDone'] ?? false,
+      repeatInterval: json['repeatInterval'] ?? '',
     );
   }
 }
@@ -170,7 +174,13 @@ class ActivitiesScreen extends StatelessWidget {
 
 class ActivityDetailsScreen extends StatefulWidget {
   final String title;
-  const ActivityDetailsScreen({super.key, required this.title});
+  final int initialTabIndex;
+  
+  const ActivityDetailsScreen({
+    super.key, 
+    required this.title,
+    this.initialTabIndex = 0, // 0 is upcoming
+  });
 
   @override
   State<ActivityDetailsScreen> createState() => _ActivityDetailsScreenState();
@@ -184,6 +194,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   String? selectedTaskType;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
+  String? repeatInterval;
 
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
@@ -195,16 +206,16 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   //store tasks
   List<ActivityTask> tasks = [];
 
-  // summary data
-  Map<String, dynamic> summaryData = {};
-
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3, 
+      vsync: this,
+      initialIndex: widget.initialTabIndex, // provided index
+    );
     _loadDogs();
     _loadTasks();
-    _calculateSummaryData();
   }
 
   @override
@@ -245,7 +256,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       if (mounted) {
         setState(() {
           tasks = loadedTasks;
-          _calculateSummaryData();
         });
       }
     } catch (e) {
@@ -254,89 +264,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
           SnackBar(content: Text('Error loading tasks: $e')),
         );
       }
-    }
-  }
-
-  void _calculateSummaryData() {
-    if (dogs.isEmpty) return;
-
-    try {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-
-      // Initialize summary structure
-      summaryData = {};
-      for (var dog in dogs) {
-        summaryData[dog.name] = {
-          'totalFeedings': 0,
-          'todayFeedings': 0,
-          'lastFed': null,
-          'totalWalks': 0,
-          'walkMinutesToday': 0,
-          'upcomingVetVisits': 0,
-        };
-      }
-
-      // calculate statistics
-      for (var task in tasks) {
-        if (!summaryData.containsKey(task.dogName)) continue;
-
-        final taskDate =
-            DateTime(task.date.year, task.date.month, task.date.day);
-        final isToday = taskDate.year == today.year &&
-            taskDate.month == today.month &&
-            taskDate.day == today.day;
-
-        if (task.taskType == 'Feed') {
-          summaryData[task.dogName]['totalFeedings']++;
-          if (isToday) {
-            summaryData[task.dogName]['todayFeedings']++;
-          }
-
-          final taskDateTime = DateTime(
-            task.date.year,
-            task.date.month,
-            task.date.day,
-            task.time.hour,
-            task.time.minute,
-          );
-
-          final lastFed = summaryData[task.dogName]['lastFed'];
-          if (lastFed == null || taskDateTime.isAfter(lastFed)) {
-            summaryData[task.dogName]['lastFed'] = taskDateTime;
-          }
-        }
-
-        // add walk statistics
-        else if (task.taskType == 'Walk' || task.taskType == 'Exercise') {
-          summaryData[task.dogName]['totalWalks']++;
-          if (isToday) {
-            // duration from notes
-            try {
-              final durationText = task.notes.split(' ').firstWhere(
-                    (part) => RegExp(r'^\d+$').hasMatch(part),
-                    orElse: () => '0',
-                  );
-              int duration = int.tryParse(durationText) ?? 0;
-              summaryData[task.dogName]['walkMinutesToday'] += duration;
-            } catch (_) {
-              // If parsing fails, add default duration
-              summaryData[task.dogName]['walkMinutesToday'] += 30;
-            }
-          }
-        }
-
-        //  vet visit statistics
-        else if (task.taskType == 'Vet Visit') {
-          if (!task.isDone && task.date.isAfter(now)) {
-            summaryData[task.dogName]['upcomingVetVisits']++;
-          }
-        }
-      }
-    } catch (e, stackTrace) {
-      print('Error calculating summary data: $e');
-      print('Stack trace: $stackTrace');
-      summaryData = {};
     }
   }
 
@@ -354,19 +281,12 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
           ],
         ),
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          _buildSummarySection(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTaskList('Upcoming'),
-                _buildTaskList('Overdue'),
-                _buildTaskList('Done'),
-              ],
-            ),
-          ),
+          _buildTaskList('Upcoming'),
+          _buildTaskList('Overdue'),
+          _buildTaskList('Done'),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -376,143 +296,58 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     );
   }
 
-  Widget _buildSummarySection() {
-    // display different summary
-    if (dogs.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text('Add dogs to view activity summary'),
-      );
-    }
-
-    if (widget.title == 'Food and Water') {
-      return _buildFoodWaterSummary();
-    } else if (widget.title == 'Exercise') {
-      return _buildExerciseSummary();
-    } else if (widget.title == 'Health') {
-      return _buildHealthSummary();
-    }
-
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildFoodWaterSummary() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      color: Colors.orange.shade50,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Feeding Summary',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          ...dogs.map((dog) {
-            final data = summaryData[dog.name];
-            if (data == null) {
-              return const SizedBox.shrink(); // skip
-            }
-            final lastFed = data['lastFed'] as DateTime?;
-            final lastFedText = lastFed != null
-                ? '${lastFed.day}/${lastFed.month} at ${lastFed.hour}:${lastFed.minute.toString().padLeft(2, '0')}'
-                : 'Not recorded';
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Expanded(child: Text(dog.name)),
-                  Text(
-                      '${data['todayFeedings']} meals today • Last fed: $lastFedText'),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExerciseSummary() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      color: Colors.green.shade50,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Exercise Summary',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          ...dogs.map((dog) {
-            final data = summaryData[dog.name];
-            if (data == null) {
-              return const SizedBox.shrink(); // skip
-            }
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Expanded(child: Text(dog.name)),
-                  Text(
-                      'Total walks: ${data['totalWalks']} • Today: ${data['walkMinutesToday']} minutes'),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHealthSummary() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      color: Colors.red.shade50,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Health Summary',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          ...dogs.map((dog) {
-            final data = summaryData[dog.name];
-            if (data == null) {
-              return const SizedBox.shrink(); // skip
-            }
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Expanded(child: Text(dog.name)),
-                  Text('Upcoming vet visits: ${data['upcomingVetVisits']}'),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
   void _updateTaskStatus(ActivityTask task, bool isDone) {
     setState(() {
       task.isDone = isDone;
+      
+      // If task is marked as done and is repeating, create the next instance
+      if (isDone && task.repeatInterval != null) {
+        DateTime nextDate;
+        
+        // Calculate next date based on repeat interval
+        switch (task.repeatInterval) {
+          case 'daily':
+            nextDate = task.date.add(const Duration(days: 1));
+            break;
+          case 'weekly':
+            nextDate = task.date.add(const Duration(days: 7));
+            break;
+          case 'monthly':
+            // Add a month by setting to the same day in the next month
+            if (task.date.month == 12) {
+              nextDate = DateTime(task.date.year + 1, 1, task.date.day);
+            } else {
+              nextDate = DateTime(task.date.year, task.date.month + 1, task.date.day);
+            }
+            break;
+          default:
+            nextDate = task.date.add(const Duration(days: 1));
+        }
+        
+        // Create new task
+        final nextTask = ActivityTask(
+          taskType: task.taskType,
+          dogName: task.dogName,
+          date: nextDate,
+          time: task.time,
+          notes: task.notes,
+          isDone: false,
+          repeatInterval: task.repeatInterval,
+        );
+        
+        tasks.add(nextTask);
+      }
     });
+    
     ActivityManager.saveTasks(tasks).then((_) {
       debugPrint("Tasks saved successfully after status update");
-      _calculateSummaryData();
     }).catchError((error) {
       debugPrint("Error saving tasks: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving task update: $error')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving task update: $error')),
+        );
+      }
     });
   }
 
@@ -558,6 +393,17 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
           .toList();
     } else if (status == 'Done') {
       filteredTasks = activityTypeTasks.where((task) => task.isDone).toList();
+      // Sort by most recent first for "Done" tasks
+      filteredTasks.sort((a, b) {
+        // First compare dates in descending order
+        int dateComparison = b.date.compareTo(a.date);
+        if (dateComparison != 0) return dateComparison;
+        
+        // If dates are the same, compare times
+        final aMinutes = a.time.hour * 60 + a.time.minute;
+        final bMinutes = b.time.hour * 60 + b.time.minute;
+        return bMinutes.compareTo(aMinutes);
+      });
     }
 
     if (filteredTasks.isEmpty) {
@@ -584,13 +430,95 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
                 if (task.notes.isNotEmpty) Text('Notes: ${task.notes}'),
               ],
             ),
-            trailing: Checkbox(
-              value: task.isDone,
-              onChanged: (value) {
-                _updateTaskStatus(task, value ?? false);
-              },
+            trailing: status == 'Done' 
+                ? const Icon(Icons.check_circle, color: Colors.green)
+                : Checkbox(
+                    value: task.isDone,
+                    onChanged: (value) {
+                      _updateTaskStatus(task, value ?? false);
+                    },
+                  ),
+            onTap: () => _showTaskDetails(context, task),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showTaskDetails(BuildContext context, ActivityTask task) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              _getIconForTaskType(task.taskType),
+              const SizedBox(width: 10),
+              Expanded(child: Text(task.taskType)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.pets),
+                  title: Text('Dog: ${task.dogName}'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_today),
+                  title: Text('Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')}'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.access_time),
+                  title: Text('Time: ${task.time.format(context)}'),
+                ),
+                if (task.notes.isNotEmpty) 
+                  ListTile(
+                    leading: const Icon(Icons.note),
+                    title: const Text('Notes:'),
+                    subtitle: Text(task.notes),
+                  ),
+                // Show repeat information if available
+                if (task.repeatInterval != null)
+                  ListTile(
+                    leading: const Icon(Icons.repeat),
+                    title: Text('Repeats: ${_getRepeatText(task.repeatInterval!)}'),
+                  ),
+              ],
             ),
           ),
+          actions: <Widget>[
+            if (!task.isDone) 
+              TextButton(
+                onPressed: () {
+                  _updateTaskStatus(task, true);
+                  Navigator.pop(context);
+                },
+                child: const Text('MARK DONE'),
+              ),
+            TextButton(
+              onPressed: () {
+                _deleteTask(task);
+                Navigator.pop(context);
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('DELETE'),
+            ),
+            if (task.repeatInterval != null)
+              TextButton(
+                onPressed: () {
+                  _stopRepeating(task);
+                  Navigator.pop(context);
+                },
+                child: const Text('STOP REPEATING'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CLOSE'),
+            ),
+          ],
         );
       },
     );
@@ -627,6 +555,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     selectedTaskType = null;
     selectedDate = null;
     selectedTime = null;
+    repeatInterval = null;
     _dateController.clear();
     _timeController.clear();
     _notesController.clear();
@@ -635,6 +564,8 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     _distanceController.clear();
 
     await _loadDogs();
+
+    if (!mounted) return;
 
     //  dialog to add new task
     final result = await showDialog<ActivityTask>(
@@ -717,6 +648,22 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
                             const InputDecoration(labelText: 'Amount (g)'),
                         keyboardType: TextInputType.number,
                       ),
+                    DropdownButtonFormField<String>(
+                      value: repeatInterval,
+                      hint: const Text('Repeat'),
+                      decoration: const InputDecoration(labelText: 'Repeat'),
+                      items: const [
+                        DropdownMenuItem(value: null, child: Text('None')),
+                        DropdownMenuItem(value: 'daily', child: Text('Daily')),
+                        DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                        DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                      ],
+                      onChanged: (String? value) {
+                        setState(() {
+                          repeatInterval = value;
+                        });
+                      },
+                    ),
                     TextFormField(
                       controller: _notesController,
                       decoration: const InputDecoration(labelText: 'Notes'),
@@ -750,6 +697,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
                         date: selectedDate!,
                         time: selectedTime!,
                         notes: _notesController.text,
+                        repeatInterval: repeatInterval,
                       ),
                     );
                   },
@@ -763,50 +711,24 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     );
 
     // add the new task and save
-    if (result != null) {
+    if (result != null && mounted) {
       setState(() {
         tasks.add(result);
-        _calculateSummaryData();
       });
+      
       try {
         await ActivityManager.saveTasks(tasks);
-        debugPrint("New task saved successfully");
+        if (mounted) {
+          debugPrint("New task saved successfully");
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving new task: $e')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error saving new task: $e')),
+          );
+        }
       }
     }
-  }
-
-  List<DropdownMenuItem<String>> _getTaskTypeItems() {
-    if (widget.title == 'Food and Water') {
-      return const [
-        DropdownMenuItem(value: 'Feed', child: Text('Feed')),
-        DropdownMenuItem(value: 'Water', child: Text('Water')),
-        DropdownMenuItem(value: 'Buy Food', child: Text('Buy Food')),
-      ];
-    } else if (widget.title == 'Exercise') {
-      return const [
-        DropdownMenuItem(value: 'Walk', child: Text('Walk')),
-        DropdownMenuItem(value: 'Exercise', child: Text('Exercise')),
-        DropdownMenuItem(value: 'Play', child: Text('Play')),
-      ];
-    } else if (widget.title == 'Health') {
-      return const [
-        DropdownMenuItem(value: 'Vet Visit', child: Text('Vet Visit')),
-        DropdownMenuItem(value: 'Medication', child: Text('Medication')),
-        DropdownMenuItem(value: 'Vaccination', child: Text('Vaccination')),
-        DropdownMenuItem(value: 'Weigh', child: Text('Weigh')),
-      ];
-    }
-
-    return const [
-      DropdownMenuItem(value: 'Feed', child: Text('Feed')),
-      DropdownMenuItem(value: 'Water', child: Text('Water')),
-      DropdownMenuItem(value: 'Exercise', child: Text('Exercise')),
-      DropdownMenuItem(value: 'Vet Visit', child: Text('Vet Visit')),
-    ];
   }
 
   Widget _buildTaskTypeDropdown(String category, StateSetter setStateDialog) {
@@ -838,43 +760,86 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     );
   }
 
-  Widget _buildActivitySpecificFields(
-      String? taskType, StateSetter setModalState) {
-    if (taskType == null) return const SizedBox.shrink();
-
-    if (['Feed', 'Water'].contains(taskType)) {
-      return TextFormField(
-        controller: _amountController,
-        decoration: InputDecoration(
-          labelText:
-              taskType == 'Feed' ? 'Amount (cups/grams)' : 'Water Amount (ml)',
-        ),
-        keyboardType: TextInputType.number,
-      );
-    } else if (taskType == 'Walk' || taskType == 'Exercise') {
-      return Column(
-        children: [
-          TextFormField(
-            controller: _durationController,
-            decoration: const InputDecoration(labelText: 'Duration (minutes)'),
-            keyboardType: TextInputType.number,
-          ),
-          TextFormField(
-            controller: _distanceController,
-            decoration:
-                const InputDecoration(labelText: 'Distance (km, optional)'),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-        ],
-      );
-    } else if (taskType == 'Weigh') {
-      return TextFormField(
-        controller: _amountController,
-        decoration: const InputDecoration(labelText: 'Weight (kg)'),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      );
+  // Helper function to get readable repeat text
+  String _getRepeatText(String repeatInterval) {
+    switch (repeatInterval) {
+      case 'daily':
+        return 'Daily';
+      case 'weekly':
+        return 'Weekly';
+      case 'monthly':
+        return 'Monthly';
+      default:
+        return repeatInterval;
     }
+  }
 
-    return const SizedBox.shrink();
+  // Delete a task
+  void _deleteTask(ActivityTask task) {
+    setState(() {
+      tasks.removeWhere((t) => 
+        t.taskType == task.taskType && 
+        t.dogName == task.dogName && 
+        t.date == task.date && 
+        t.time.hour == task.time.hour && 
+        t.time.minute == task.time.minute
+      );
+    });
+    
+    ActivityManager.saveTasks(tasks).then((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Task deleted')),
+        );
+      }
+    }).catchError((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting task: $error')),
+        );
+      }
+    });
+  }
+
+  // Stop repeating a task
+  void _stopRepeating(ActivityTask task) {
+    // Create a new task without repeat
+    final newTask = ActivityTask(
+      taskType: task.taskType,
+      dogName: task.dogName,
+      date: task.date,
+      time: task.time,
+      notes: task.notes,
+      isDone: task.isDone,
+      // No repeatInterval
+    );
+    
+    setState(() {
+      // Remove old task
+      tasks.removeWhere((t) => 
+        t.taskType == task.taskType && 
+        t.dogName == task.dogName && 
+        t.date == task.date && 
+        t.time.hour == task.time.hour && 
+        t.time.minute == task.time.minute
+      );
+      // Add new task without repeat
+      tasks.add(newTask);
+    });
+    
+    ActivityManager.saveTasks(tasks).then((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Task will no longer repeat')),
+        );
+      }
+    }).catchError((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating task: $error')),
+        );
+      }
+    });
   }
 }
+
