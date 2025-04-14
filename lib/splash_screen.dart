@@ -11,19 +11,20 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _bounceAnimation;
+  late AnimationController _controller; // animation life cycle
+  late Animation<double> _bounceAnimation; // up and down
 
   @override
   void initState() {
     super.initState();
 
-    // Animation for the logo bounce
+    // Animation for the logo bounce 1s repeat
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
 
+    // bounce animation from position 0 to -20 pixels (upward)
     _bounceAnimation = Tween<double>(begin: 0, end: -20).animate(
       CurvedAnimation(parent: _controller, curve: Curves.elasticInOut),
     );

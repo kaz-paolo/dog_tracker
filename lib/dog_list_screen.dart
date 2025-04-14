@@ -16,7 +16,8 @@ class DogListScreen extends StatefulWidget {
 }
 
 class _DogListScreenState extends State<DogListScreen> {
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController =
+      TextEditingController(); // COntrols input from search
   List<Dog> allDogs = [];
   List<Dog> filteredDogs = [];
 
@@ -24,30 +25,34 @@ class _DogListScreenState extends State<DogListScreen> {
   void initState() {
     super.initState();
     _loadDogs();
-    _searchController.addListener(_filterDogs);
+    _searchController.addListener(_filterDogs); // filter typed
   }
 
+  // Load dog data
   Future<void> _loadDogs() async {
-    final loadedDogs = await DogListManager.loadDogList();
+    final loadedDogs = await DogListManager.loadDogList(); //fetch dogs
     setState(() {
       allDogs = loadedDogs;
       filteredDogs = List.from(allDogs);
     });
   }
 
+  // Save dog data to local storage
   Future<void> _saveDogs() async {
     await DogListManager.saveDogList(allDogs);
   }
 
+  // Search filtering
   void _filterDogs() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       filteredDogs = allDogs
           .where((dog) => dog.name.toLowerCase().contains(query))
-          .toList();
+          .toList(); // filters alldogs by checking if it contains the search query
     });
   }
 
+  // Open add dog screen
   Future<void> _goToAddDogScreen() async {
     final newDog = await Navigator.push(
       context,
@@ -55,6 +60,7 @@ class _DogListScreenState extends State<DogListScreen> {
     );
 
     if (newDog != null && newDog is Dog) {
+      // if user adds a new dog
       setState(() {
         allDogs.add(newDog);
         _filterDogs();
@@ -84,6 +90,7 @@ class _DogListScreenState extends State<DogListScreen> {
             children: [
               const SizedBox(height: 20),
               Center(
+                // Title and search bar
                 child: Text(
                   'My Dogs',
                   style: GoogleFonts.poppins(
@@ -123,12 +130,15 @@ class _DogListScreenState extends State<DogListScreen> {
               ),
               const SizedBox(height: 15),
 
+              // Grid view of dogs
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   childAspectRatio: 0.75,
+
+                  // Go to Dog's Profile when tapped
                   children: filteredDogs.map((dog) {
                     return GestureDetector(
                       onTap: () {
@@ -149,6 +159,7 @@ class _DogListScreenState extends State<DogListScreen> {
         ),
       ),
 
+      // Add dog button
       floatingActionButton: FloatingActionButton(
         onPressed: _goToAddDogScreen,
         backgroundColor: const Color(0xFFFFDCAA),
@@ -158,6 +169,7 @@ class _DogListScreenState extends State<DogListScreen> {
   }
 }
 
+// Display dog info
 class DogCard extends StatelessWidget {
   final Dog dog;
 
@@ -165,6 +177,7 @@ class DogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Rounded card container
     return Container(
       height: 240,
       decoration: BoxDecoration(
@@ -191,6 +204,8 @@ class DogCard extends StatelessWidget {
               ),
             ),
           ),
+
+          // Dog's info
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
             child: Column(
@@ -239,16 +254,18 @@ class DogCard extends StatelessWidget {
     );
   }
 
-  // make the image depding on web/mobile
+  // make the image depending on web/mobile
   Widget _buildDogImage(Dog dog) {
     if (dog.imagePath.isEmpty) {
       return const Icon(
+        // default icon if no image
         Icons.pets,
         color: Colors.grey,
         size: 50,
       );
     }
 
+    // show image from bytes if web image
     if (dog.imagePath.startsWith('web_image_') && dog.imageBytes != null) {
       return Image.memory(
         dog.imageBytes!,
@@ -265,6 +282,7 @@ class DogCard extends StatelessWidget {
     }
 
     if (kIsWeb) {
+      // On web: show a placeholder icon since local file access isn't supported
       // web
       return const Icon(
         Icons.image,
@@ -272,6 +290,7 @@ class DogCard extends StatelessWidget {
         size: 50,
       );
     } else {
+      // On mobile: load image from local file system
       // mobile
       return Image.file(
         File(dog.imagePath),

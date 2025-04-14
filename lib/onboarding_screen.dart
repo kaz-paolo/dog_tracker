@@ -14,7 +14,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  // ✨ Text Styles
+  // Text Styles
   final TextStyle titleTextStyle = GoogleFonts.poppins(
     fontSize: 40,
     fontWeight: FontWeight.bold,
@@ -26,6 +26,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     color: const Color(0xFFFA9B63),
   );
 
+// Content data
   final List<Map<String, String>> onboardingData = [
     {
       'title': 'Welcome Purparent!',
@@ -52,10 +53,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
+  // Moves to the next onboarding page
   void _nextPage() {
     if (_currentPage < onboardingData.length - 1) {
       _controller.nextPage(
           duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
+
+      // Nnavigates to DogListScreen if it's the last page.
     } else {
       Navigator.pushReplacement(
         context,
@@ -73,12 +77,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  // Skips all pages and navigates directly to dog list screen
   void _skip() {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const HomeScreen(),
+            const DogListScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -89,27 +94,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  // layout for each onboarding page
   Widget _buildPage(Map<String, String> data, bool isLastPage) {
     return Padding(
       padding: const EdgeInsets.all(30.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // onboarding image
           if ((data['image'] ?? '').isNotEmpty)
             Image.asset(data['image']!, height: 250),
           const SizedBox(height: 20),
+
+          // onboarding text
           Text(
             data['title'] ?? '',
             style: titleTextStyle,
             textAlign: TextAlign.left,
           ),
           const SizedBox(height: 10),
+
+          // onboarding desc
           Text(
             data['desc'] ?? '',
             style: descTextStyle,
             textAlign: TextAlign.left,
           ),
           const SizedBox(height: 20),
+
+          // onboarding last page
           if (isLastPage)
             ElevatedButton(
               onPressed: _nextPage,
@@ -131,14 +144,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  // Dots for showing page
   Widget _buildDots() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      // list of widgets/dots per onboarding page
       children: List.generate(onboardingData.length, (index) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 5),
           height: 10,
+
+          // highlight current page
           width: _currentPage == index ? 24 : 10,
           decoration: BoxDecoration(
             color: _currentPage == index
@@ -173,6 +190,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           _buildDots(),
           const SizedBox(height: 20),
+
+          // if not last page, show skip and next buttons
           if (_currentPage != onboardingData.length - 1)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -183,8 +202,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: ElevatedButton(
                     onPressed: _skip,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFFFA9B63), // Background color
+                      backgroundColor: const Color(0xFFFA9B63),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(

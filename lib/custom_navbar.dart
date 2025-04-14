@@ -8,6 +8,7 @@ class CustomNavBar extends StatelessWidget {
     required this.currentIndex,
   }) : super(key: key);
 
+  // Navvbar when tapped
   void _onItemTapped(BuildContext context, int index) {
     switch (index) {
       case 0:

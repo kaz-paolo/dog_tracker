@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'dart:convert';
 
-
 class Dog {
   final String name;
   final String breed;
@@ -25,6 +24,7 @@ class Dog {
     required this.health,
   });
 
+  // converts the Dog object into a map for json conversion
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -39,13 +39,15 @@ class Dog {
     };
   }
 
+  // create a Dog object from a JSON map
   factory Dog.fromJson(Map<String, dynamic> json) {
     return Dog(
       name: json['name'] ?? '',
       breed: json['breed'] ?? '',
       gender: json['gender'] ?? '',
       imagePath: json['imagePath'] ?? '',
-      imageBytes: json['imageBytes'] != null ? base64Decode(json['imageBytes']) : null,
+      imageBytes:
+          json['imageBytes'] != null ? base64Decode(json['imageBytes']) : null,
       birthDate: json['birthDate'] ?? '',
       weight: json['weight'] ?? '',
       age: json['age'] ?? '',
