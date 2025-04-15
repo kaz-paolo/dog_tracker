@@ -38,16 +38,16 @@ class _AddDogScreenState extends State<AddDogScreen> {
   void initState() {
     super.initState();
 
-    // Add kg to weight input
-    weightController.addListener(() {
-      final raw = weightController.text.replaceAll(RegExp(r'\D'), '');
-      if (raw.isNotEmpty && !weightController.text.contains('kg')) {
-        weightController.value = TextEditingValue(
-          text: '$raw kg',
-          selection: TextSelection.collapsed(offset: '$raw kg'.length),
-        );
-      }
-    });
+    // // Add kg to weight input
+    // weightController.addListener(() {
+    //   final raw = weightController.text.replaceAll(RegExp(r'\D'), '');
+    //   if (raw.isNotEmpty && !weightController.text.contains('kg')) {
+    //     weightController.value = TextEditingValue(
+    //       text: '$raw kg',
+    //       selection: TextSelection.collapsed(offset: '$raw kg'.length),
+    //     );
+    //   }
+    // });
 
     // Add yr/yrs suffix to age input
     ageController.addListener(() {
@@ -154,7 +154,7 @@ class _AddDogScreenState extends State<AddDogScreen> {
           imagePath: _imagePath!,
           imageBytes: _imageBytes,
           birthDate: birthDateController.text,
-          weight: '$rawWeight kg',
+          weight: '$rawWeight',
           age: '$rawAge $ageSuffix',
           health: _selectedHealth ?? '',
         );
