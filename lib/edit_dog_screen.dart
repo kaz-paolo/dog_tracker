@@ -53,22 +53,13 @@ class _EditDogScreenState extends State<EditDogScreen> {
     nameController = TextEditingController(text: dog.name);
     breedController = TextEditingController(text: dog.breed);
     birthDateController = TextEditingController(text: dog.birthDate);
-    weightController = TextEditingController(text: dog.weight);
+    weightController =
+        TextEditingController(text: dog.weight.replaceAll(' kg', ''));
     ageController = TextEditingController(text: _calculateAge(dog.birthDate));
     _selectedGender = dog.gender;
     _selectedHealth = dog.health;
     _imageBytes = dog.imageBytes;
     _imagePath = dog.imagePath;
-
-    weightController.addListener(() {
-      final raw = weightController.text.replaceAll(RegExp(r'\D'), '');
-      if (raw.isNotEmpty && !weightController.text.contains('kg')) {
-        weightController.value = TextEditingValue(
-          text: '$raw kg',
-          selection: TextSelection.collapsed(offset: '$raw kg'.length),
-        );
-      }
-    });
   }
 
   Future<void> _pickImage() async {
@@ -119,11 +110,8 @@ class _EditDogScreenState extends State<EditDogScreen> {
     );
 
     if (picked != null) {
-      // Update the birthdate text field
       birthDateController.text =
           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-
-      // Update the age based on the selected birthdate
       setState(() {
         ageController.text = _calculateAge(birthDateController.text);
       });
@@ -143,7 +131,7 @@ class _EditDogScreenState extends State<EditDogScreen> {
         imagePath: _imagePath ?? widget.initialDog.imagePath,
         imageBytes: _imageBytes ?? widget.initialDog.imageBytes,
         birthDate: birthDateController.text,
-        weight: '$rawWeight kg',
+        weight: rawWeight,
         age: '$rawAge $ageSuffix',
         health: _selectedHealth,
       );
@@ -233,18 +221,19 @@ class _EditDogScreenState extends State<EditDogScreen> {
               ),
               TextFormField(
                 controller: weightController,
-                decoration: const InputDecoration(labelText: 'Weight (kg)'),
+                decoration: const InputDecoration(
+                  labelText: 'Weight',
+                  hintText: 'Enter weight in kg',
+                ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) =>
-                    value == null || value.replaceAll(RegExp(r'\D'), '').isEmpty
-                        ? 'Required'
-                        : null,
+                    value == null || value.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: ageController,
                 decoration: const InputDecoration(labelText: 'Age (years)'),
-                readOnly: true, // Make it read-only
+                readOnly: true,
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Required' : null,
               ),

@@ -136,7 +136,8 @@ class _DogProfileScreenState extends State<DogProfileScreen> {
                     const SizedBox(width: 32),
                     _buildInfoItem(Icons.pets, currentDog.breed),
                     const SizedBox(width: 32),
-                    _buildInfoItem(Icons.monitor_weight, currentDog.weight),
+                    _buildInfoItem(
+                        Icons.monitor_weight, '${currentDog.weight} kg'),
                   ],
                 ),
                 const SizedBox(height: 20),

@@ -1,7 +1,5 @@
 import 'package:dog_tracker/custom_navbar.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'dog_list_manager.dart';
 import 'dog.dart';
 import 'activity_manager.dart';
@@ -14,6 +12,7 @@ class ActivityTask {
   final String notes;
   bool isDone;
   final String? repeatInterval;
+  final double? weight;
 
   ActivityTask({
     required this.taskType,
@@ -23,6 +22,7 @@ class ActivityTask {
     this.notes = '',
     this.isDone = false,
     this.repeatInterval,
+    this.weight,
   });
 
   Map<String, dynamic> toJson() {
@@ -58,6 +58,9 @@ class ActivityTask {
       notes: json['notes'] ?? '',
       isDone: json['isDone'] ?? false,
       repeatInterval: json['repeatInterval'] ?? '',
+      weight: json['weight'] != null
+          ? double.parse(json['weight'].toString())
+          : null, // Parse weight
     );
   }
 }
@@ -68,150 +71,86 @@ class ActivitiesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              
-              // Header title
-              Center(
-                child: Text(
-                  'Activities',
-                  style: GoogleFonts.poppins(
-                    fontSize: 50,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFA9B63),
-                    fontStyle: FontStyle.italic,
+      appBar: AppBar(
+        title: const Text('Activities'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildActivityCard(
+              context,
+              'Food and Water',
+              'Track meals, water intake, and feeding schedules',
+              Icons.restaurant,
+              Colors.orange.shade100,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ActivityDetailsScreen(
+                    title: 'Food and Water',
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 30),
-              
-              // Category cards
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildActivityCategoryCard(
-                        context,
-                        'Food and Water',
-                        'Track meals, water intake, and feeding schedules',
-                        Icons.restaurant,
-                        const Color(0xFFFFDCAA),
-                        const Color(0xFFFA9B63),
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ActivityDetailsScreen(
-                              title: 'Food and Water',
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 18),
-                      
-                      _buildActivityCategoryCard(
-                        context,
-                        'Exercise',
-                        'Log walks, playtime, and physical activities',
-                        Icons.directions_walk,
-                        Colors.green.shade50,
-                        Colors.green.shade700,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ActivityDetailsScreen(
-                              title: 'Exercise',
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 18),
-                      
-                      _buildActivityCategoryCard(
-                        context,
-                        'Health',
-                        'Record vet visits, medications and wellness tracking',
-                        Icons.favorite,
-                        Colors.red.shade50,
-                        Colors.red.shade700,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ActivityDetailsScreen(
-                              title: 'Health',
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 20),
-                    ],
+            ),
+            const SizedBox(height: 16),
+            _buildActivityCard(
+              context,
+              'Exercise',
+              'Log walks, playtime, and physical activities',
+              Icons.directions_walk,
+              Colors.green.shade100,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ActivityDetailsScreen(
+                    title: 'Exercise',
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            _buildActivityCard(
+              context,
+              'Health',
+              'Record vet visits, medications and wellness tracking',
+              Icons.favorite,
+              Colors.red.shade100,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ActivityDetailsScreen(
+                    title: 'Health',
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      
       bottomNavigationBar: const CustomNavBar(currentIndex: 2),
     );
   }
 
-  Widget _buildActivityCategoryCard(
+  Widget _buildActivityCard(
     BuildContext context,
     String title,
     String subtitle,
     IconData icon,
-    Color backgroundColor,
-    Color iconColor,
+    Color color,
     VoidCallback onTap,
   ) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      elevation: 4,
+      color: color,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.all(20.0),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: iconColor,
-                ),
-              ),
+              Icon(icon, size: 48),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -219,28 +158,17 @@ class ActivitiesScreen extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black.withOpacity(0.8),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.black.withOpacity(0.6),
-                      ),
-                    ),
+                    Text(subtitle),
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: iconColor,
-              ),
+              const Icon(Icons.arrow_forward_ios),
             ],
           ),
         ),
@@ -252,9 +180,9 @@ class ActivitiesScreen extends StatelessWidget {
 class ActivityDetailsScreen extends StatefulWidget {
   final String title;
   final int initialTabIndex;
-  
+
   const ActivityDetailsScreen({
-    super.key, 
+    super.key,
     required this.title,
     this.initialTabIndex = 0, // 0 is upcoming
   });
@@ -272,7 +200,6 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   String? repeatInterval;
-  bool isLoading = true;
 
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
@@ -281,16 +208,19 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _distanceController = TextEditingController();
 
-  // Store tasks
+  //store tasks
   List<ActivityTask> tasks = [];
 
   @override
   void initState() {
     super.initState();
+    if (dogs.isNotEmpty) {
+      selectedDog = dogs.first.name;
+    }
     _tabController = TabController(
-      length: 3, 
+      length: 3,
       vsync: this,
-      initialIndex: widget.initialTabIndex,
+      initialIndex: widget.initialTabIndex, // provided index
     );
     _loadDogs();
     _loadTasks();
@@ -334,14 +264,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       if (mounted) {
         setState(() {
           tasks = loadedTasks;
-          isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading tasks: $e')),
         );
@@ -349,408 +275,184 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     }
   }
 
-  Color _getCategoryColor() {
-    switch (widget.title) {
-      case 'Food and Water':
-        return const Color(0xFFFA9B63);
-      case 'Exercise':
-        return Colors.green.shade700;
-      case 'Health':
-        return Colors.red.shade700;
-      default:
-        return const Color(0xFFFA9B63);
-    }
-  }
-  
-  Color _getCategoryLightColor() {
-    switch (widget.title) {
-      case 'Food and Water':
-        return const Color(0xFFFFF5EA);
-      case 'Exercise':
-        return Colors.green.shade50;
-      case 'Health':
-        return Colors.red.shade50;
-      default:
-        return const Color(0xFFFFF5EA);
+  Future<void> _updateDogWeight(String dogName, double weight) async {
+    try {
+      // Find the dog in the list
+      final dogIndex = dogs.indexWhere((dog) => dog.name == dogName);
+      if (dogIndex == -1) return;
+
+      // Update the dog's weight
+      final updatedDog = dogs[dogIndex].copyWith(
+          weight: weight.toString()); // Convert to string for Dog class
+
+      // Update the local list
+      setState(() {
+        dogs[dogIndex] = updatedDog;
+      });
+
+      // Save the updated dog list
+      await DogListManager.saveDogList(dogs);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Updated weight for $dogName')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating weight: $e')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title section
-            Container(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Back button
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Title
-                  Text(
-                    widget.title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: _getCategoryColor(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Tab Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: TabBar(
-                controller: _tabController,
-                labelColor: _getCategoryColor(),
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: _getCategoryColor(),
-                indicatorWeight: 3,
-                labelStyle: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                unselectedLabelStyle: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-                tabs: const [
-                  Tab(text: 'Upcoming'),
-                  Tab(text: 'Overdue'),
-                  Tab(text: 'Done'),
-                ],
-              ),
-            ),
-            
-            // Tab content
-            Expanded(
-              child: isLoading
-                ? Center(child: CircularProgressIndicator(color: _getCategoryColor()))
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildTaskList('Upcoming'),
-                      _buildTaskList('Overdue'),
-                      _buildTaskList('Done'),
-                    ],
-                  ),
-            ),
+      appBar: AppBar(
+        title: Text(widget.title),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Upcoming'),
+            Tab(text: 'Overdue'),
+            Tab(text: 'Done'),
           ],
         ),
       ),
-      
-      // Add button
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildTaskList('Upcoming'),
+          _buildTaskList('Overdue'),
+          _buildTaskList('Done'),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addTask,
-        backgroundColor: _getCategoryColor(),
-        child: const Icon(Icons.add, color: Colors.white),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildTaskList(String status) {
-    List<ActivityTask> filteredTasks = [];
-    final now = DateTime.now();
-
-    // filter activity type
-    List<ActivityTask> activityTypeTasks = [];
-    if (widget.title == 'Food and Water') {
-      activityTypeTasks = tasks
-          .where((task) => ['Feed', 'Water', 'Buy Food'].contains(task.taskType))
-          .toList();
-    } else if (widget.title == 'Exercise') {
-      activityTypeTasks = tasks
-          .where((task) => ['Exercise', 'Walk', 'Play', 'Training'].contains(task.taskType))
-          .toList();
-    } else if (widget.title == 'Health') {
-      activityTypeTasks = tasks
-          .where((task) => ['Vet Visit', 'Medication', 'Vaccination', 'Weigh']
-              .contains(task.taskType))
-          .toList();
-    } else {
-      activityTypeTasks = tasks;
-    }
-
-    // filter  status
-    if (status == 'Upcoming') {
-      filteredTasks = activityTypeTasks
-          .where((task) =>
-              !task.isDone &&
-              (task.date.isAfter(now) ||
-                  (task.date.year == now.year &&
-                      task.date.month == now.month &&
-                      task.date.day == now.day)))
-          .toList();
-      
-      //sort upcoming by date/time
-      filteredTasks.sort((a, b) {
-        int dateComp = a.date.compareTo(b.date);
-        if (dateComp != 0) return dateComp;
-        
-        final aMinutes = a.time.hour * 60 + a.time.minute;
-        final bMinutes = b.time.hour * 60 + b.time.minute;
-        return aMinutes.compareTo(bMinutes);
-      });
-    } else if (status == 'Overdue') {
-      filteredTasks = activityTypeTasks
-          .where((task) =>
-              !task.isDone &&
-              task.date.isBefore(DateTime(now.year, now.month, now.day)))
-          .toList();
-          
-      // sort overdue by most recently missed first
-      filteredTasks.sort((a, b) => b.date.compareTo(a.date));
-    } else if (status == 'Done') {
-      filteredTasks = activityTypeTasks.where((task) => task.isDone).toList();
-      // sort by most recently completed
-      filteredTasks.sort((a, b) {
-        int dateComp = b.date.compareTo(a.date);
-        if (dateComp != 0) return dateComp;
-        
-        final aMinutes = a.time.hour * 60 + a.time.minute;
-        final bMinutes = b.time.hour * 60 + b.time.minute;
-        return bMinutes.compareTo(aMinutes);
-      });
-    }
-
-    if (filteredTasks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _getCategoryIcon(),
-              size: 70,
-              color: Colors.grey.withOpacity(0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No $status ${widget.title} tasks yet',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey.withOpacity(0.7),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(24),
-      itemCount: filteredTasks.length,
-      itemBuilder: (context, index) {
-        return _buildTaskCard(filteredTasks[index], status);
-      },
-    );
-  }
-
-  Widget _buildTaskCard(ActivityTask task, String status) {
-    final isCompleted = status == 'Done';
-    final isOverdue = status == 'Overdue';
-    
-    // format date/time
-    final dateFormat = DateFormat('MMM d, yyyy');
-    final dateStr = dateFormat.format(task.date);
-    final timeStr = '${task.time.hour.toString().padLeft(2, '0')}:${task.time.minute.toString().padLeft(2, '0')} ${task.time.period.name.toUpperCase()}';
-    
-    return GestureDetector(
-      onTap: () => _showTaskDetails(context, task),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 10,
-              spreadRadius: 0,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // circle with task icon
-            Container(
-              width: 50,
-              height: 50,
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _getCategoryLightColor(),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: _getIconForTaskType(task.taskType),
-              ),
-            ),
-            
-            // task details
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 14, 12, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // task and dog name
-                        Expanded(
-                          child: Text(
-                            '${task.taskType} ${task.dogName}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: isOverdue ? Colors.red : _getCategoryColor(),
-                              decoration: isCompleted ? TextDecoration.lineThrough : null,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        
-                        // checkbox
-                        if (isCompleted)
-                          const Icon(Icons.check_circle, color: Colors.green, size: 20)
-                        else
-                          SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                              value: task.isDone,
-                              activeColor: _getCategoryColor(),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              onChanged: (value) {
-                                _updateTaskStatus(task, value ?? false);
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // date and time
-                    Text(
-                      '$timeStr | $dateStr',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                        decoration: isCompleted ? TextDecoration.lineThrough : null,
-                      ),
-                    ),
-                    
-                    // repeat indicator
-                    if (task.repeatInterval != null && task.repeatInterval!.isNotEmpty)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.repeat,
-                            size: 14,
-                            color: _getCategoryColor().withOpacity(0.7),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _getRepeatText(task.repeatInterval!),
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: _getCategoryColor().withOpacity(0.7),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  IconData _getCategoryIcon() {
-    switch (widget.title) {
-      case 'Food and Water':
-        return Icons.restaurant;
-      case 'Exercise':
-        return Icons.directions_walk;
-      case 'Health':
-        return Icons.favorite;
-      default:
-        return Icons.pets;
+  Future<void> _updateDogHealth(String dogName, String healthStatus) async {
+    try {
+      // Find the dog in the list
+      final dogIndex = dogs.indexWhere((dog) => dog.name == dogName);
+      if (dogIndex == -1) return;
+
+      // Update the dog's health status
+      final updatedDog = dogs[dogIndex].copyWith(health: healthStatus);
+
+      // Update the local list
+      setState(() {
+        dogs[dogIndex] = updatedDog;
+      });
+
+      // Save the updated dog list
+      await DogListManager.saveDogList(dogs);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Updated health status for $dogName')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating health status: $e')),
+        );
+      }
     }
   }
 
-  void _updateTaskStatus(ActivityTask task, bool isDone) {
-    setState(() {
-      task.isDone = isDone;
-      
-      // if repeating create the next instance
-      if (isDone && task.repeatInterval != null) {
-        DateTime nextDate;
-        
-        // calculate next date interval
-        switch (task.repeatInterval) {
-          case 'daily':
-            nextDate = task.date.add(const Duration(days: 1));
-            break;
-          case 'weekly':
-            nextDate = task.date.add(const Duration(days: 7));
-            break;
-          case 'monthly':
-            // month new
-            if (task.date.month == 12) {
-              nextDate = DateTime(task.date.year + 1, 1, task.date.day);
-            } else {
-              nextDate = DateTime(task.date.year, task.date.month + 1, task.date.day);
-            }
-            break;
-          default:
-            nextDate = task.date.add(const Duration(days: 1));
-        }
-        
-        // create new task
+  Future<void> _updateTaskStatus(ActivityTask task, bool isDone) async {
+    if (isDone) {
+      // Confirm with the user before creating a repeating task
+      if (task.repeatInterval != null) {
+        final shouldProceed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Repeating Task'),
+            content: Text(
+                'This task repeats ${_getRepeatText(task.repeatInterval!)}. Completing it will create a new instance for the next period.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldProceed != true) return;
+      }
+
+      ActivityTask updatedTask = task;
+
+      if (task.taskType == 'Weigh') {
+        final weightText = await _showWeightInputDialog(context, task.dogName);
+        if (weightText == null) return;
+
+        final weight = double.tryParse(weightText);
+        if (weight == null) return;
+
+        updatedTask = ActivityTask(
+          taskType: task.taskType,
+          dogName: task.dogName,
+          date: task.date,
+          time: task.time,
+          notes: task.notes,
+          isDone: isDone,
+          repeatInterval: task.repeatInterval,
+          weight: weight,
+        );
+
+        _updateDogWeight(task.dogName, weight);
+      } else if (task.taskType == 'Vet Visit') {
+        final healthStatus =
+            await _showHealthStatusDialog(context, task.dogName);
+        if (healthStatus == null) return;
+
+        updatedTask = ActivityTask(
+          taskType: task.taskType,
+          dogName: task.dogName,
+          date: task.date,
+          time: task.time,
+          notes: task.notes,
+          isDone: isDone,
+          repeatInterval: task.repeatInterval,
+          weight: task.weight,
+        );
+
+        _updateDogHealth(task.dogName, healthStatus);
+      } else {
+        task.isDone = isDone;
+      }
+
+      setState(() {
+        tasks.remove(task);
+        tasks.add(updatedTask);
+      });
+
+      if (!isDone) {
+        // Show SnackBar immediately after setting the state
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Task marked as incomplete')),
+          );
+        });
+      }
+
+      // Create next repeating task if applicable
+      if (task.repeatInterval != null) {
+        final nextDate = _calculateNextDate(task.date, task.repeatInterval!);
+
         final nextTask = ActivityTask(
           taskType: task.taskType,
           dogName: task.dogName,
@@ -759,12 +461,40 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
           notes: task.notes,
           isDone: false,
           repeatInterval: task.repeatInterval,
+          weight: null,
         );
-        
-        tasks.add(nextTask);
+
+        setState(() {
+          tasks.add(nextTask);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'New ${_getRepeatText(task.repeatInterval!)} task created'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
-    });
-    
+    } else {
+      // Undo completion
+      setState(() {
+        task.isDone = isDone; // Update task status
+      });
+
+      ActivityManager.saveTasks(tasks).then((_) {
+        debugPrint("Tasks saved successfully after status update");
+      }).catchError((error) {
+        debugPrint("Error saving tasks: $error");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error saving task update: $error')),
+          );
+        }
+      });
+    }
+
+    // Save updated tasks
     ActivityManager.saveTasks(tasks).then((_) {
       debugPrint("Tasks saved successfully after status update");
     }).catchError((error) {
@@ -775,6 +505,248 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
         );
       }
     });
+  }
+
+  Future<String?> _showHealthStatusDialog(
+      BuildContext context, String dogName) async {
+    String? selectedStatus;
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Update Health Status for $dogName'),
+        content: DropdownButtonFormField<String>(
+          value: selectedStatus,
+          hint: const Text('Select Health Status'),
+          items: const [
+            DropdownMenuItem(value: 'Healthy', child: Text('Healthy')),
+            DropdownMenuItem(value: 'Sick', child: Text('Sick')),
+            DropdownMenuItem(
+                value: 'Under Observation', child: Text('Under Observation')),
+          ],
+          onChanged: (String? newValue) {
+            selectedStatus = newValue;
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, selectedStatus),
+            child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  DateTime _calculateNextDate(DateTime date, String repeatInterval) {
+    switch (repeatInterval) {
+      case 'daily':
+        return date.add(const Duration(days: 1));
+      case 'weekly':
+        return date.add(const Duration(days: 7));
+      case 'monthly':
+        if (date.month == 12) {
+          return DateTime(date.year + 1, 1, date.day);
+        } else {
+          return DateTime(date.year, date.month + 1, date.day);
+        }
+      default:
+        return date.add(const Duration(days: 1));
+    }
+  }
+
+  Future<String?> _showWeightInputDialog(
+      BuildContext context, String dogName) async {
+    final weightController = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Enter Weight for $dogName'),
+        content: TextField(
+          controller: weightController,
+          decoration: const InputDecoration(
+            labelText: 'Weight (kg)',
+            hintText: 'Enter current weight in kg',
+          ),
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (weightController.text.isNotEmpty) {
+                Navigator.pop(context, weightController.text);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTaskList(String status) {
+    List<ActivityTask> filteredTasks = [];
+    final now = DateTime.now();
+
+    // Filtering logic based on status
+    List<ActivityTask> activityTypeTasks = [];
+    if (widget.title == 'Food and Water') {
+      activityTypeTasks = tasks
+          .where(
+              (task) => ['Feed', 'Water', 'Buy Food'].contains(task.taskType))
+          .toList();
+    } else if (widget.title == 'Exercise') {
+      activityTypeTasks = tasks
+          .where((task) => ['Exercise', 'Walk', 'Play'].contains(task.taskType))
+          .toList();
+    } else if (widget.title == 'Health') {
+      activityTypeTasks = tasks
+          .where((task) => ['Vet Visit', 'Medication', 'Vaccination', 'Weigh']
+              .contains(task.taskType))
+          .toList();
+    } else {
+      activityTypeTasks = tasks;
+    }
+
+    // Filter by status
+    if (status == 'Upcoming') {
+      filteredTasks = activityTypeTasks
+          .where((task) =>
+              !task.isDone &&
+              (task.date.isAfter(now) ||
+                  (task.date.year == now.year &&
+                      task.date.month == now.month &&
+                      task.date.day == now.day)))
+          .toList();
+    } else if (status == 'Overdue') {
+      filteredTasks = activityTypeTasks
+          .where((task) =>
+              !task.isDone &&
+              task.date.isBefore(DateTime(now.year, now.month, now.day)))
+          .toList();
+    } else if (status == 'Done') {
+      filteredTasks = activityTypeTasks.where((task) => task.isDone).toList();
+      // Sort by most recent first for "Done" tasks
+      filteredTasks.sort((a, b) {
+        // First compare dates in descending order
+        int dateComparison = b.date.compareTo(a.date);
+        if (dateComparison != 0) return dateComparison;
+
+        // If dates are the same, compare times
+        final aMinutes = a.time.hour * 60 + a.time.minute;
+        final bMinutes = b.time.hour * 60 + b.time.minute;
+        return bMinutes.compareTo(aMinutes);
+      });
+    }
+
+    if (filteredTasks.isEmpty) {
+      return Center(
+        child: Text('No $status ${widget.title} tasks yet.'),
+      );
+    }
+
+    return Column(
+      children: [
+        if (status == 'Done')
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: _clearAllDoneTasks,
+              child: const Text('Clear All Done Tasks'),
+            ),
+          ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: filteredTasks.length,
+            itemBuilder: (context, index) {
+              final task = filteredTasks[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  leading: _getIconForTaskType(task.taskType),
+                  title: Text(task.taskType),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Dog: ${task.dogName}'),
+                      Text(
+                          'Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')} at ${task.time.format(context)}'),
+                      if (task.notes.isNotEmpty) Text('Notes: ${task.notes}'),
+                      if (task.taskType == 'Weigh' && task.weight != null)
+                        Text('Weight: ${task.weight!.toStringAsFixed(1)} kg')
+                    ],
+                  ),
+                  trailing: status == 'Done'
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.undo, color: Colors.blue),
+                              onPressed: () {
+                                _updateTaskStatus(task, false);
+                              },
+                            ),
+                            const Icon(Icons.check_circle, color: Colors.green),
+                          ],
+                        )
+                      : Checkbox(
+                          value: task.isDone,
+                          onChanged: (value) {
+                            _updateTaskStatus(task, value ?? false);
+                          },
+                        ),
+                  onTap: () => _showTaskDetails(context, task),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _clearAllDoneTasks() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Done Tasks'),
+        content:
+            const Text('Are you sure you want to delete all completed tasks?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                tasks.removeWhere((task) => task.isDone);
+              });
+              ActivityManager.saveTasks(tasks).then((_) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('All done tasks cleared')),
+                  );
+                }
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showTaskDetails(BuildContext context, ActivityTask task) {
@@ -798,31 +770,58 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
                   leading: const Icon(Icons.pets),
                   title: Text('Dog: ${task.dogName}'),
                 ),
+                if (task.taskType == 'Weigh' && task.weight != null)
+                  ListTile(
+                    leading: const Icon(Icons.monitor_weight),
+                    title:
+                        Text('Weight: ${task.weight!.toStringAsFixed(1)} kg'),
+                  ),
+                if (task.taskType == 'Vet Visit' && task.isDone)
+                  ListTile(
+                    leading: const Icon(Icons.health_and_safety),
+                    title: Text('Health Status: Updated'),
+                  ),
                 ListTile(
                   leading: const Icon(Icons.calendar_today),
-                  title: Text('Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')}'),
+                  title: Text(
+                      'Date: ${task.date.year}-${task.date.month.toString().padLeft(2, '0')}-${task.date.day.toString().padLeft(2, '0')}'),
                 ),
                 ListTile(
                   leading: const Icon(Icons.access_time),
                   title: Text('Time: ${task.time.format(context)}'),
                 ),
-                if (task.notes.isNotEmpty) 
+                if (task.notes.isNotEmpty)
                   ListTile(
                     leading: const Icon(Icons.note),
                     title: const Text('Notes:'),
                     subtitle: Text(task.notes),
                   ),
-                // show repeat informatio
                 if (task.repeatInterval != null)
                   ListTile(
                     leading: const Icon(Icons.repeat),
-                    title: Text('Repeats: ${_getRepeatText(task.repeatInterval!)}'),
+                    title: Text(
+                        'Repeats: ${_getRepeatText(task.repeatInterval!)}'),
                   ),
               ],
             ),
           ),
           actions: <Widget>[
-            if (!task.isDone) 
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _editTask(task); // Call the edit function
+              },
+              child: const Text('EDIT'),
+            ),
+            if (task.isDone)
+              TextButton(
+                onPressed: () {
+                  _updateTaskStatus(task, false);
+                  Navigator.pop(context);
+                },
+                child: const Text('MARK INCOMPLETE'),
+              ),
+            if (!task.isDone)
               TextButton(
                 onPressed: () {
                   _updateTaskStatus(task, true);
@@ -849,6 +848,186 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('CLOSE'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _editTask(ActivityTask task) async {
+    // Initialize variables with the current task values
+    selectedDog = task.dogName;
+    selectedTaskType = task.taskType;
+    selectedDate = task.date;
+    selectedTime = task.time;
+    repeatInterval = task.repeatInterval;
+
+    _dateController.text =
+        "${task.date.day}/${task.date.month}/${task.date.year}";
+    _timeController.text = "${task.time.hour}:${task.time.minute}";
+    _notesController.text = task.notes;
+
+    // Show the edit dialog
+    final editedTask = await showDialog<ActivityTask>(
+      context: context,
+      builder: (BuildContext context) {
+        return _editTaskDialog(task);
+      },
+    );
+
+    // If the task was edited, update the list and save
+    if (editedTask != null) {
+      setState(() {
+        int index = tasks.indexWhere((t) =>
+            t.taskType == task.taskType &&
+            t.dogName == task.dogName &&
+            t.date == task.date &&
+            t.time.hour == task.time.hour &&
+            t.time.minute == task.time.minute);
+        if (index != -1) {
+          tasks[index] = editedTask;
+        }
+      });
+
+      ActivityManager.saveTasks(tasks).then((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Task updated')),
+          );
+        }
+      }).catchError((error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating task: $error')),
+          );
+        }
+      });
+    }
+  }
+
+  Widget _editTaskDialog(ActivityTask task) {
+    return StatefulBuilder(
+      builder: (context, setStateDialog) {
+        return AlertDialog(
+          title: Text('Edit ${widget.title} Task'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  value: selectedDog,
+                  hint: const Text('Select Dog'),
+                  decoration: const InputDecoration(labelText: 'Dog'),
+                  items: dogs.map((Dog dog) {
+                    return DropdownMenuItem<String>(
+                      value: dog.name,
+                      child: Text(dog.name),
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedDog = value;
+                    });
+                  },
+                ),
+                _buildTaskTypeDropdown(widget.title, setStateDialog),
+                TextFormField(
+                  controller: _dateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Date',
+                    suffixIcon: Icon(Icons.calendar_today),
+                  ),
+                  readOnly: true,
+                  onTap: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (pickedDate != null) {
+                      setStateDialog(() {
+                        selectedDate = pickedDate;
+                        _dateController.text =
+                            "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                      });
+                    }
+                  },
+                ),
+                TextFormField(
+                  controller: _timeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Time',
+                    suffixIcon: Icon(Icons.access_time),
+                  ),
+                  readOnly: true,
+                  onTap: () async {
+                    final TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: selectedTime ?? TimeOfDay.now(),
+                    );
+                    if (pickedTime != null) {
+                      setStateDialog(() {
+                        selectedTime = pickedTime;
+                        _timeController.text =
+                            "${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                      });
+                    }
+                  },
+                ),
+                DropdownButtonFormField<String>(
+                  value: repeatInterval,
+                  items: const [
+                    DropdownMenuItem(value: null, child: Text('None')),
+                    DropdownMenuItem(value: 'daily', child: Text('Daily')),
+                    DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                    DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                  ],
+                  onChanged: (String? value) {
+                    setStateDialog(() {
+                      repeatInterval = value;
+                    });
+                  },
+                ),
+                TextFormField(
+                  controller: _notesController,
+                  decoration: const InputDecoration(labelText: 'Notes'),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (selectedDog == null ||
+                    selectedTaskType == null ||
+                    selectedDate == null ||
+                    selectedTime == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please fill all required fields')),
+                  );
+                  return;
+                }
+                Navigator.pop(
+                  context,
+                  ActivityTask(
+                    taskType: selectedTaskType!,
+                    dogName: selectedDog!,
+                    date: selectedDate!,
+                    time: selectedTime!,
+                    notes: _notesController.text,
+                    repeatInterval: repeatInterval,
+                  ),
+                );
+              },
+              child: const Text('SAVE'),
             ),
           ],
         );
@@ -987,8 +1166,10 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
                       items: const [
                         DropdownMenuItem(value: null, child: Text('None')),
                         DropdownMenuItem(value: 'daily', child: Text('Daily')),
-                        DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                        DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                        DropdownMenuItem(
+                            value: 'weekly', child: Text('Weekly')),
+                        DropdownMenuItem(
+                            value: 'monthly', child: Text('Monthly')),
                       ],
                       onChanged: (String? value) {
                         setState(() {
@@ -1047,7 +1228,7 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       setState(() {
         tasks.add(result);
       });
-      
+
       try {
         await ActivityManager.saveTasks(tasks);
         if (mounted) {
@@ -1074,10 +1255,14 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       taskTypes = ['Vet Visit', 'Medication', 'Vaccination', 'Weigh'];
     }
 
+    // Initialize selectedTaskType if it's null and taskTypes is not empty
+    if (selectedTaskType == null && taskTypes.isNotEmpty) {
+      selectedTaskType = taskTypes.first;
+    }
+
     return DropdownButtonFormField<String>(
       value: selectedTaskType,
       hint: const Text('Select Task Type'),
-      decoration: const InputDecoration(labelText: 'Task Type'),
       items: taskTypes.map((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -1089,9 +1274,16 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
           selectedTaskType = value;
         });
       },
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a task type';
+        }
+        return null;
+      },
     );
   }
 
+  // Helper function to get readable repeat text
   String _getRepeatText(String repeatInterval) {
     switch (repeatInterval) {
       case 'daily':
@@ -1105,17 +1297,17 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     }
   }
 
+  // Delete a task
   void _deleteTask(ActivityTask task) {
     setState(() {
-      tasks.removeWhere((t) => 
-        t.taskType == task.taskType && 
-        t.dogName == task.dogName && 
-        t.date == task.date && 
-        t.time.hour == task.time.hour && 
-        t.time.minute == task.time.minute
-      );
+      tasks.removeWhere((t) =>
+          t.taskType == task.taskType &&
+          t.dogName == task.dogName &&
+          t.date == task.date &&
+          t.time.hour == task.time.hour &&
+          t.time.minute == task.time.minute);
     });
-    
+
     ActivityManager.saveTasks(tasks).then((_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1131,8 +1323,9 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     });
   }
 
+  // Stop repeating a task
   void _stopRepeating(ActivityTask task) {
-    // create a new task without repeat
+    // Create a new task without repeat
     final newTask = ActivityTask(
       taskType: task.taskType,
       dogName: task.dogName,
@@ -1140,21 +1333,21 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
       time: task.time,
       notes: task.notes,
       isDone: task.isDone,
+      // No repeatInterval
     );
-    
+
     setState(() {
-      // remove old task
-      tasks.removeWhere((t) => 
-        t.taskType == task.taskType && 
-        t.dogName == task.dogName && 
-        t.date == task.date && 
-        t.time.hour == task.time.hour && 
-        t.time.minute == task.time.minute
-      );
-      // new task without repeat
+      // Remove old task
+      tasks.removeWhere((t) =>
+          t.taskType == task.taskType &&
+          t.dogName == task.dogName &&
+          t.date == task.date &&
+          t.time.hour == task.time.hour &&
+          t.time.minute == task.time.minute);
+      // Add new task without repeat
       tasks.add(newTask);
     });
-    
+
     ActivityManager.saveTasks(tasks).then((_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1170,4 +1363,3 @@ class _ActivityDetailsScreenState extends State<ActivityDetailsScreen>
     });
   }
 }
-
