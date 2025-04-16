@@ -5,7 +5,9 @@ buildscript {
     }
 
     dependencies {
+        // Update the Android Gradle Plugin version to 8.2.1 or higher
         classpath 'com.android.tools.build:gradle:8.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 allprojects {
